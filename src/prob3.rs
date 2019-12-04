@@ -1,7 +1,7 @@
 #[derive(Debug, Eq, PartialEq)]
 enum LineSegment {
-    horizontal(i32, i32, i32, Direction),
-    vertical(i32, i32, i32, Direction),
+    Horizontal(i32, i32, i32, Direction),
+    Vertical(i32, i32, i32, Direction),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -16,21 +16,21 @@ impl LineSegment {
     fn from_direction(start: &mut Point, dir: &str) -> LineSegment {
         let len: u32 = dir[1..].parse().unwrap();
         if dir.starts_with("U") {
-            let s = LineSegment::vertical(start.x, start.y, start.y + len as i32, Direction::Up);
+            let s = LineSegment::Vertical(start.x, start.y, start.y + len as i32, Direction::Up);
             start.y += len as i32;
             s
         } else if dir.starts_with("D") {
-            let s = LineSegment::vertical(start.x, start.y - len as i32, start.y, Direction::Down);
+            let s = LineSegment::Vertical(start.x, start.y - len as i32, start.y, Direction::Down);
             start.y -= len as i32;
             s
         } else if dir.starts_with("R") {
             let s =
-                LineSegment::horizontal(start.y, start.x, start.x + len as i32, Direction::Right);
+                LineSegment::Horizontal(start.y, start.x, start.x + len as i32, Direction::Right);
             start.x += len as i32;
             s
         } else if dir.starts_with("L") {
             let s =
-                LineSegment::horizontal(start.y, start.x - len as i32, start.x, Direction::Left);
+                LineSegment::Horizontal(start.y, start.x - len as i32, start.x, Direction::Left);
             start.x -= len as i32;
             s
         } else {
@@ -40,17 +40,17 @@ impl LineSegment {
 
     fn length(&self) -> i32 {
         match self {
-            LineSegment::horizontal(_, x1, x2, _) => x2 - x1,
-            LineSegment::vertical(_, y1, y2, _) => y2 - y1,
+            LineSegment::Horizontal(_, x1, x2, _) => x2 - x1,
+            LineSegment::Vertical(_, y1, y2, _) => y2 - y1,
         }
     }
 
     fn steps_to(&self, point: &Point) -> i32 {
         match self {
-            LineSegment::horizontal(_, x1, _, Direction::Right) => point.x - x1,
-            LineSegment::horizontal(_, _, x2, Direction::Left) => x2 - point.x,
-            LineSegment::vertical(_, y1, _, Direction::Up) => point.y - y1,
-            LineSegment::vertical(_, _, y2, Direction::Down) => y2 - point.y,
+            LineSegment::Horizontal(_, x1, _, Direction::Right) => point.x - x1,
+            LineSegment::Horizontal(_, _, x2, Direction::Left) => x2 - point.x,
+            LineSegment::Vertical(_, y1, _, Direction::Up) => point.y - y1,
+            LineSegment::Vertical(_, _, y2, Direction::Down) => y2 - point.y,
             _ => panic!(),
         }
     }
@@ -159,15 +159,15 @@ fn all_intesections(line: &LineSegment, lines: &[LineSegment]) -> Vec<Point> {
 
 fn intersect(line1: &LineSegment, line2: &LineSegment) -> Option<Point> {
     match *line1 {
-        LineSegment::horizontal(y, x1, x2, _) => match *line2 {
-            LineSegment::horizontal(y1, x11, x12, _) => {
+        LineSegment::Horizontal(y, x1, x2, _) => match *line2 {
+            LineSegment::Horizontal(y1, x11, x12, _) => {
                 if y == y1 && (x11 <= x1 && x12 > x1 || x11 > x11 && x11 <= x2) {
                     Some(Point::new(std::cmp::max(x1, x11), y))
                 } else {
                     None
                 }
             }
-            LineSegment::vertical(x, y1, y2, _) => {
+            LineSegment::Vertical(x, y1, y2, _) => {
                 if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
                     Some(Point::new(x, y))
                 } else {
@@ -175,15 +175,15 @@ fn intersect(line1: &LineSegment, line2: &LineSegment) -> Option<Point> {
                 }
             }
         },
-        LineSegment::vertical(x, y1, y2, _) => match *line2 {
-            LineSegment::vertical(x1, y11, y12, _) => {
+        LineSegment::Vertical(x, y1, y2, _) => match *line2 {
+            LineSegment::Vertical(x1, y11, y12, _) => {
                 if x == x1 && (y11 <= y1 && y12 > y1 || y11 > y11 && y11 <= y2) {
                     Some(Point::new(x, std::cmp::max(y1, y11)))
                 } else {
                     None
                 }
             }
-            LineSegment::horizontal(y, x1, x2, _) => {
+            LineSegment::Horizontal(y, x1, x2, _) => {
                 if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
                     Some(Point::new(x, y))
                 } else {
@@ -202,15 +202,15 @@ mod test {
     fn test_intersect() {
         assert_eq!(
             super::intersect(
-                &LineSegment::horizontal(4, 0, 5, Direction::Right),
-                &LineSegment::horizontal(2, 0, 10, Direction::Right)
+                &LineSegment::Horizontal(4, 0, 5, Direction::Right),
+                &LineSegment::Horizontal(2, 0, 10, Direction::Right)
             ),
             None,
         );
         assert_eq!(
             super::intersect(
-                &LineSegment::horizontal(4, 0, 5, Direction::Right),
-                &LineSegment::vertical(2, 0, 10, Direction::Up)
+                &LineSegment::Horizontal(4, 0, 5, Direction::Right),
+                &LineSegment::Vertical(2, 0, 10, Direction::Up)
             ),
             Some(Point::new(2, 4)),
         );
@@ -220,15 +220,15 @@ mod test {
     fn test_intersect2() {
         assert_eq!(
             super::intersect(
-                &LineSegment::vertical(4, 0, 5, Direction::Up),
-                &LineSegment::vertical(2, 0, 10, Direction::Up)
+                &LineSegment::Vertical(4, 0, 5, Direction::Up),
+                &LineSegment::Vertical(2, 0, 10, Direction::Up)
             ),
             None,
         );
         assert_eq!(
             super::intersect(
-                &LineSegment::vertical(4, 0, 5, Direction::Up),
-                &LineSegment::horizontal(2, 0, 10, Direction::Right)
+                &LineSegment::Vertical(4, 0, 5, Direction::Up),
+                &LineSegment::Horizontal(2, 0, 10, Direction::Right)
             ),
             Some(Point::new(4, 2)),
         );
@@ -238,8 +238,8 @@ mod test {
     fn no_match() {
         assert_eq!(
             super::intersect(
-                &LineSegment::horizontal(4, 0, 5, Direction::Right),
-                &LineSegment::vertical(6, 0, 10, Direction::Up)
+                &LineSegment::Horizontal(4, 0, 5, Direction::Right),
+                &LineSegment::Vertical(6, 0, 10, Direction::Up)
             ),
             None,
         );
@@ -249,8 +249,8 @@ mod test {
     fn blah() {
         assert_eq!(
             super::intersect(
-                &LineSegment::horizontal(1, 10, 15, Direction::Right),
-                &LineSegment::horizontal(1, 8, 20, Direction::Right)
+                &LineSegment::Horizontal(1, 10, 15, Direction::Right),
+                &LineSegment::Horizontal(1, 8, 20, Direction::Right)
             ),
             Some(Point::new(10, 1))
         );
@@ -266,10 +266,10 @@ mod test {
         assert_eq!(
             super::line_segments("U7,R6,D4,L4"),
             vec!(
-                LineSegment::vertical(0, 0, 7, Direction::Up),
-                LineSegment::horizontal(7, 0, 6, Direction::Right),
-                LineSegment::vertical(6, 3, 7, Direction::Down),
-                LineSegment::horizontal(3, 2, 6, Direction::Left)
+                LineSegment::Vertical(0, 0, 7, Direction::Up),
+                LineSegment::Horizontal(7, 0, 6, Direction::Right),
+                LineSegment::Vertical(6, 3, 7, Direction::Down),
+                LineSegment::Horizontal(3, 2, 6, Direction::Left)
             )
         )
     }
