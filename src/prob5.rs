@@ -1,10 +1,10 @@
 use crate::intcode::IntCode;
 pub fn solve_part_1() {
-    input().run(1);
+    input().run([1].iter());
 }
 
 pub fn solve_part_2() {
-    input().run(5);
+    input().run([5].iter());
 }
 
 fn input() -> IntCode {

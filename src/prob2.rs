@@ -1,7 +1,7 @@
 use crate::intcode::IntCode;
 
 pub fn solve_part_1() {
-    let result = input().run(0);
+    let result = input().run([].iter());
 
     println!("Part 1: {}", result[0]);
 }
@@ -13,7 +13,7 @@ pub fn solve_part_2() {
             let mut input = input();
             input.code[1] = noun;
             input.code[2] = verb;
-            let out = input.run(0);
+            let out = input.run([].iter());
             if out[0] == 19690720 {
                 result = 100 * noun + verb;
                 break;
@@ -36,37 +36,5 @@ fn input() -> IntCode {
             139, 143, 2, 143, 13, 147, 1, 9, 147, 151, 1, 151, 2, 155, 1, 9, 155, 0, 99, 2, 0, 14,
             0,
         ],
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::IntCode;
-
-    fn code(code: Vec<i32>) -> IntCode {
-        IntCode { code: code }
-    }
-
-    fn run(mut code: IntCode) -> Vec<i32> {
-        code.run(0);
-        code.code
-    }
-
-    #[test]
-    fn sample_input() {
-        assert_eq!(run(code(vec![1, 0, 0, 0, 99])), vec!(2, 0, 0, 0, 99));
-        assert_eq!(run(code(vec![2, 3, 0, 3, 99])), vec!(2, 3, 0, 6, 99));
-        assert_eq!(
-            run(code(vec![2, 4, 4, 5, 99, 0])),
-            vec!(2, 4, 4, 5, 99, 9801)
-        );
-        assert_eq!(
-            run(code(vec![1, 1, 1, 4, 99, 5, 6, 0, 99])),
-            vec!(30, 1, 1, 4, 2, 5, 6, 0, 99)
-        );
-        assert_eq!(
-            run(code(vec![1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50])),
-            vec!(3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50)
-        );
     }
 }

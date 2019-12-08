@@ -1,5 +1,5 @@
 pub fn solve_part_1() {
-    let count = count_orbits(&input(), "COM", 0);
+    let count = solve_part_1_for(input());
     println!("Part 1: {}", count);
 }
 pub fn solve_part_2() {
@@ -83,7 +83,7 @@ mod test {
     fn test_bfs() {
         assert_eq!(
             super::bfs(
-                &super::convert_input(&vec![
+                &convert_input(&vec![
                     "COM)B", "B)C", "C)D", "D)E", "E)F", "B)G", "G)H", "D)I", "E)J", "J)K", "K)L",
                     "K)YOU", "I)SAN",
                 ]),
@@ -93,14 +93,14 @@ mod test {
             4
         );
     }
-}
 
-fn convert_input(input: &Vec<&'static str>) -> Vec<(String, String)> {
-    input
-        .iter()
-        .map(|s| s.split(")").collect::<Vec<_>>())
-        .map(|s| (s[0].to_owned(), s[1].to_owned()))
-        .collect()
+    fn convert_input(input: &Vec<&'static str>) -> Vec<(String, String)> {
+        input
+            .iter()
+            .map(|s| s.split(")").collect::<Vec<_>>())
+            .map(|s| (s[0].to_owned(), s[1].to_owned()))
+            .collect()
+    }
 }
 
 fn input() -> Vec<(String, String)> {
