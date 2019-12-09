@@ -27,7 +27,7 @@ pub fn solve_part_2() {
     println!("Part 2: {}", max_thruster);
 }
 
-fn solve_for_part1(code: IntCode) -> (i32, [i32; 5]) {
+fn solve_for_part1(code: IntCode) -> (i64, [i64; 5]) {
     let mut max_thruster = 0;
     let mut settings = [0, 0, 0, 0, 0];
     for a in 0..5 {
@@ -47,7 +47,7 @@ fn solve_for_part1(code: IntCode) -> (i32, [i32; 5]) {
     }
     return (max_thruster, settings);
 }
-fn thruster_value(code: IntCode, phase_settings: &[i32]) -> i32 {
+fn thruster_value(code: IntCode, phase_settings: &[i64]) -> i64 {
     let mut amp1 = code.clone();
 
     let out1 = amp1.run([phase_settings[0], 0].iter());
@@ -58,8 +58,8 @@ fn thruster_value(code: IntCode, phase_settings: &[i32]) -> i32 {
     out5[0]
 }
 
-fn thruster_value_part_2(code: &IntCode, phase_settings: &[i32]) -> i32 {
-    let (sender1, receiver1) = channel::<i32>();
+fn thruster_value_part_2(code: &IntCode, phase_settings: &[i64]) -> i64 {
+    let (sender1, receiver1) = channel();
     let (sender2, receiver2) = channel();
     let (sender3, receiver3) = channel();
     let (sender4, receiver4) = channel();
@@ -89,7 +89,7 @@ fn thruster_value_part_2(code: &IntCode, phase_settings: &[i32]) -> i32 {
     *all_results.last().unwrap()
 }
 
-fn input() -> Vec<i32> {
+fn input() -> Vec<i64> {
     vec![
         3, 8, 1001, 8, 10, 8, 105, 1, 0, 0, 21, 42, 51, 60, 77, 94, 175, 256, 337, 418, 99999, 3,
         9, 1001, 9, 4, 9, 102, 5, 9, 9, 1001, 9, 3, 9, 102, 5, 9, 9, 4, 9, 99, 3, 9, 102, 2, 9, 9,
