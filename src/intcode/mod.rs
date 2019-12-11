@@ -36,6 +36,7 @@ impl IntCode {
             let mut op_code: String = format!("{:06}", self.code[pc]);
 
             while op_code != "99" {
+                //println!("{} {} {:?}", op_code, pc, &self.code[pc..pc + 4]);
                 match &op_code[op_code.len() - 2..] {
                     "01" => {
                         self.store(
@@ -106,7 +107,7 @@ impl IntCode {
                     "99" => {
                         return;
                     }
-                    c => panic!("Illegal opcode {}", c),
+                    c => panic!("Illegal opcode {} at {}", c, pc),
                 };
 
                 //println!(
