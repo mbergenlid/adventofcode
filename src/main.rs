@@ -2,6 +2,7 @@ mod intcode;
 mod prob1;
 mod prob10;
 mod prob11;
+mod prob12;
 mod prob2;
 mod prob3;
 mod prob4;
@@ -63,6 +64,10 @@ fn main() {
         11 => {
             prob11::solve_part_1();
             prob11::solve_part_2();
+        }
+        12 => {
+            prob12::solve_part_1();
+            prob12::solve_part_2();
         }
         _ => panic!("Unknown problem number"),
     }
