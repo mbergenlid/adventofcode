@@ -212,7 +212,7 @@ fn solve_for_part_2_new(center: &Point, points: &[Point]) -> Point {
     //println!("{:?}", vectors);
     let mut vaporizing_order = Vec::new();
     let mut idx = 0;
-    for i in 0..201 {
+    for _i in 0..201 {
         let mut found_empty = false;
         while !found_empty {
             for (point, visited) in bla.get_mut(idx).unwrap().iter_mut() {

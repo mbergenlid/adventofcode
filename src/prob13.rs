@@ -1,9 +1,9 @@
 use crate::intcode::IntCode;
 use sdl2::rect::Rect;
 use std::collections::HashMap;
-use std::io::Read;
 use std::sync::mpsc::channel;
 
+#[allow(dead_code)]
 pub fn solve_part_1() {
     let (_in_sender, in_receiver) = channel();
     let (out_sender, out_receiver) = channel();
@@ -194,16 +194,6 @@ fn sdl_game() -> Result<(), String> {
     }
 
     Ok(())
-}
-
-fn input_thread() {
-    std::thread::spawn(|| {
-        let mut reader = std::io::stdin();
-        let mut input = String::new();
-
-        let mut buf = [0; 1];
-        reader.read(&mut buf).unwrap();
-    });
 }
 
 fn code() -> IntCode {
