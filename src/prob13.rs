@@ -1,6 +1,5 @@
 use crate::intcode::IntCode;
 use sdl2::rect::Rect;
-use sdl2::Sdl;
 use std::collections::HashMap;
 use std::io::Read;
 use std::sync::mpsc::channel;
@@ -28,7 +27,6 @@ pub fn solve_part_2() {
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use std::time::Duration;
 
 fn sdl_game() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -141,42 +139,50 @@ fn sdl_game() -> Result<(), String> {
                 match screen[i][j] {
                     0 => {
                         canvas.set_draw_color(Color::RGB(0, 0, 0));
-                        canvas.fill_rect(Rect::new(
-                            (i as u32 * scale) as i32,
-                            (j as u32 * scale) as i32,
-                            scale,
-                            scale,
-                        ));
+                        canvas
+                            .fill_rect(Rect::new(
+                                (i as u32 * scale) as i32,
+                                (j as u32 * scale) as i32,
+                                scale,
+                                scale,
+                            ))
+                            .unwrap();
                     }
                     1 => {}
                     2 => {
                         canvas.set_draw_color(Color::RGB(255, 0, 0));
-                        canvas.fill_rect(Rect::new(
-                            (i as u32 * scale) as i32,
-                            (j as u32 * scale) as i32,
-                            scale,
-                            scale,
-                        ));
+                        canvas
+                            .fill_rect(Rect::new(
+                                (i as u32 * scale) as i32,
+                                (j as u32 * scale) as i32,
+                                scale,
+                                scale,
+                            ))
+                            .unwrap();
                     }
                     3 => {
                         canvas.set_draw_color(Color::RGB(0, 255, 0));
-                        canvas.fill_rect(Rect::new(
-                            (i as u32 * scale) as i32,
-                            (j as u32 * scale) as i32,
-                            scale,
-                            scale / 2,
-                        ));
+                        canvas
+                            .fill_rect(Rect::new(
+                                (i as u32 * scale) as i32,
+                                (j as u32 * scale) as i32,
+                                scale,
+                                scale / 2,
+                            ))
+                            .unwrap();
                     }
                     4 => {
                         canvas.set_draw_color(Color::RGB(0, 0, 255));
-                        canvas.fill_rect(Rect::new(
-                            (i as u32 * scale) as i32,
-                            (j as u32 * scale) as i32,
-                            scale,
-                            scale / 2,
-                        ));
+                        canvas
+                            .fill_rect(Rect::new(
+                                (i as u32 * scale) as i32,
+                                (j as u32 * scale) as i32,
+                                scale,
+                                scale / 2,
+                            ))
+                            .unwrap();
                     }
-                    c => {}
+                    _ => {}
                 }
             }
         }
