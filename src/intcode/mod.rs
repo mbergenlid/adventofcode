@@ -154,7 +154,7 @@ impl IntCode {
 #[cfg(test)]
 mod test {
     use super::IntCode;
-    use std::sync::mpsc::{channel, Receiver, Sender};
+    use std::sync::mpsc::channel;
     #[test]
     fn test() {
         let mut code = IntCode::new(vec![3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8]);

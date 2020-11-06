@@ -1,4 +1,3 @@
-use std::iter::Skip;
 
 pub fn solve_part_1() {
     let signal = phases(
@@ -77,7 +76,7 @@ fn phases(mut signal: Vec<i32>, phase: u32) -> Vec<i32> {
     signal
 }
 
-fn phases_part_2(mut signal: Vec<i32>, phase: u32) -> Vec<i32> {
+fn phases_part_2(signal: Vec<i32>, phase: u32) -> Vec<i32> {
     let offset = signal.iter().take(7).fold(0, |acc, next| acc * 10 + next) as usize;
     let signal_length = signal.len();
     println!("Offset: {}", offset);
@@ -116,14 +115,6 @@ fn process(signal: &mut Vec<i32>, offset: usize) {
     }
 }
 
-fn repeat(times: usize, signal: Vec<i32>) -> Vec<i32> {
-    let mut result = Vec::with_capacity(times * signal.len());
-    for _ in 0..times {
-        result.append(&mut signal.clone());
-    }
-    result
-}
-
 struct BasePattern {
     position: u32,
     current: usize,
@@ -137,14 +128,6 @@ impl BasePattern {
             position: position,
             current: 0,
             step: 1,
-        }
-    }
-
-    fn from(position: u32) -> BasePattern {
-        BasePattern {
-            position: position,
-            current: 1,
-            step: 0,
         }
     }
 }
@@ -162,7 +145,7 @@ impl Iterator for BasePattern {
         }
     }
 
-    fn nth(&mut self, mut n: usize) -> Option<Self::Item> {
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
         if n == self.position as usize - 1 {
             self.current = 1;
             self.step = 0;
@@ -175,21 +158,21 @@ impl Iterator for BasePattern {
 
 #[cfg(test)]
 mod test {
-    use crate::prob16::{repeat, BasePattern};
+    use crate::prob16::BasePattern;
 
     #[test]
     fn test_base_pattern() {
         assert_eq!(
-            super::BasePattern::new(1).take(8).collect::<Vec<_>>(),
+            BasePattern::new(1).take(8).collect::<Vec<_>>(),
             vec!(1, 0, -1, 0, 1, 0, -1, 0)
         );
         assert_eq!(
-            super::BasePattern::new(2).take(8).collect::<Vec<_>>(),
+            BasePattern::new(2).take(8).collect::<Vec<_>>(),
             vec!(0, 1, 1, 0, 0, -1, -1, 0)
         );
 
         assert_eq!(
-            super::BasePattern::new(2)
+            BasePattern::new(2)
                 .skip(1)
                 .take(8)
                 .collect::<Vec<_>>(),
@@ -197,7 +180,7 @@ mod test {
         );
 
         assert_eq!(
-            super::BasePattern::new(5)
+            BasePattern::new(5)
                 .skip(4)
                 .take(15)
                 .collect::<Vec<_>>(),
@@ -262,29 +245,6 @@ mod test {
             .collect::<Vec<_>>(),
             vec!(5, 2, 4, 3, 2, 1, 3, 3)
         );
-    }
-
-    #[ignore]
-    #[test]
-    fn test_part_2() {
-        let mut base_pattern = BasePattern::new(0303673 + 1);
-        let mut i = 0;
-        let mut count = 0303673;
-        let signal = repeat(
-            10_000,
-            vec![
-                0, 3, 0, 3, 6, 7, 3, 2, 5, 7, 7, 2, 1, 2, 9, 4, 4, 0, 6, 3, 4, 9, 1, 5, 6, 5, 4, 7,
-                4, 6, 6, 4,
-            ],
-        );
-        let mut value = 0;
-        for s in signal.iter().skip(0303673) {
-            let p = base_pattern.next().unwrap();
-            value += s * p;
-            count += 1;
-            i = (count % signal.len());
-        }
-        println!("")
     }
 
     #[test]

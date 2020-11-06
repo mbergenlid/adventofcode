@@ -392,24 +392,6 @@ mod test {
         );
     }
 
-    //#[test]
-    fn test_sample_part_2() {
-        assert_eq!(
-            super::solve_for_part_2_new(
-                &Point::new(8, 3),
-                super::parse(vec!(
-                    ".#....#####...#..",
-                    "##...##.#####..##",
-                    "##...#...#.#####.",
-                    "..#.....#...###..",
-                    "..#.#.....#....##",
-                ))
-                .as_slice()
-            ),
-            Point::new(8, 2)
-        );
-    }
-
     #[test]
     fn partial_eq() {
         assert_eq!(
