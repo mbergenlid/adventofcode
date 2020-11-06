@@ -7,6 +7,7 @@ mod prob12;
 mod prob13;
 mod prob14;
 mod prob15;
+mod prob16;
 mod prob2;
 mod prob3;
 mod prob4;
@@ -84,6 +85,10 @@ fn main() {
         15 => {
             prob15::solve_part_1();
             prob15::solve_part_2();
+        }
+        16 => {
+            prob16::solve_part_1();
+            prob16::solve_part_2();
         }
         _ => panic!("Unknown problem number"),
     }
