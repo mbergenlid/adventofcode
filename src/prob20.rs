@@ -13,7 +13,7 @@ pub fn solve_part_2() {
     println!("Steps: {}", steps);
 }
 
-fn solve_maze(mut maze: Maze) -> u32 {
+fn solve_maze(maze: Maze) -> u32 {
     let mut queue = VecDeque::new();
     queue.push_back(TileQueue { position: maze.start, steps: 0 });
     let mut visited = HashSet::new();
@@ -75,21 +75,6 @@ impl TileType {
     }
 }
 
-struct Warp {
-    destination: Pos,
-    inner: bool,
-}
-
-impl Warp {
-    fn inner(destination: Pos) -> Warp {
-        Warp { destination, inner: true}
-    }
-
-    fn outer(destination: Pos) -> Warp {
-        Warp { destination, inner: false}
-    }
-}
-
 #[derive(Debug, Eq, PartialEq)]
 struct Tile {
     value: TileType,
@@ -102,6 +87,7 @@ impl Tile {
         Tile { value, warp: None, visited: false }
     }
 
+    #[allow(unused)]
     fn with_warp(mut self, position: Pos) -> Tile {
         self.warp = Some(position);
         self
@@ -173,7 +159,7 @@ impl Maze {
                     if let Label(other_label) = grid[y][x + 1].value {
                         if x + 2 < max_width && grid[y][x + 2].value == Passage {
                             warps.push(((c, other_label), Pos::new(y, x + 2)));
-                        } else if x - 1 >= 0 && grid[y][x - 1].value == Passage {
+                        } else if grid[y][x - 1].value == Passage {
                             warps.push(((c, other_label), Pos::new(y, x - 1)));
                         } else {
                             panic!("Faulty maze around ({},{})", y, x);

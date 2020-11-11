@@ -30,6 +30,20 @@ impl IntCode {
 
         output_receiver.iter().collect::<Vec<i64>>()
     }
+
+    pub fn run_1<I: Iterator<Item=i64>>(&mut self, input: I) -> Vec<i64> {
+        let clone = self.clone();
+        let (input_sender, input_receiver) = channel();
+        let (output_sender, output_receiver) = channel();
+        clone.run_async(input_receiver, output_sender);
+
+        for i in input {
+            input_sender.send(i).unwrap();
+        }
+
+        output_receiver.iter().collect::<Vec<i64>>()
+    }
+
     pub fn run_async(mut self, input: Receiver<i64>, output: Sender<i64>) {
         thread::spawn(move || {
             let mut pc = 0;
