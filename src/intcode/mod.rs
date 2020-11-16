@@ -1,21 +1,28 @@
 use std::collections::HashMap;
 use std::slice::Iter;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender, RecvError, TryRecvError};
 use std::thread;
 #[derive(Clone)]
 pub struct IntCode {
     relative_base: usize,
     pub code: Vec<i64>,
     extra_memory: HashMap<usize, i64>,
+    default_input: Option<i64>,
 }
 
 impl IntCode {
     pub fn new(code: Vec<i64>) -> IntCode {
         IntCode {
             relative_base: 0,
-            code: code,
+            code,
             extra_memory: HashMap::new(),
+            default_input: None,
         }
+    }
+
+    pub fn with_default_input(mut self, default_input: i64) -> IntCode {
+        self.default_input = Some(default_input);
+        self
     }
 
     pub fn run(&mut self, input: Iter<i64>) -> Vec<i64> {
@@ -44,7 +51,7 @@ impl IntCode {
         output_receiver.iter().collect::<Vec<i64>>()
     }
 
-    pub fn run_async(mut self, input: Receiver<i64>, output: Sender<i64>) {
+    pub fn run_async<I: 'static + Input + Send>(mut self, input: I, output: Sender<i64>) {
         thread::spawn(move || {
             let mut pc = 0;
             let mut op_code: String = format!("{:06}", self.code[pc]);
@@ -71,7 +78,7 @@ impl IntCode {
                     "03" => {
                         self.store(
                             self.get_parameter_address(&op_code, pc, 1),
-                            input.recv().unwrap(),
+                            self.read_input(&input),
                         );
                         pc += 2;
                     }
@@ -134,6 +141,17 @@ impl IntCode {
         });
     }
 
+    fn read_input<I: Input>(&self, input: &I) -> i64 {
+        if self.default_input.is_some() {
+            match input.try_recv() {
+                Ok(value) => value,
+                Err(_) => self.default_input.unwrap(),
+            }
+        } else {
+            input.recv().unwrap()
+        }
+    }
+
     fn get_parameter_address(&self, op_code: &str, pc: usize, index: usize) -> usize {
         let idx = op_code.len() - 2 - index;
         match &op_code[idx..idx + 1] {
@@ -162,6 +180,21 @@ impl IntCode {
         } else {
             self.code.as_mut_slice()[dest as usize] = data;
         }
+    }
+}
+
+pub trait Input {
+    fn recv(&self) -> Result<i64, RecvError>;
+    fn try_recv(&self) -> Result<i64, TryRecvError>;
+}
+
+impl Input for Receiver<i64> {
+    fn recv(&self) -> Result<i64, RecvError> {
+        self.recv()
+    }
+
+    fn try_recv(&self) -> Result<i64, TryRecvError> {
+        self.try_recv()
     }
 }
 

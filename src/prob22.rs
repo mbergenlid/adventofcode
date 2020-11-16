@@ -279,19 +279,16 @@ impl SpaceDeck2 {
     fn deal_into_new_stack(&mut self) {
         self.a = (self.size as i64 - 1 - self.a).mod_floor(&(self.size as i64));
         self.b = (self.b * -1).mod_floor(&(self.size as i64));
-        // self.value = (self.size as i64 - 1 - self.value).mod_floor(&(self.size as i64));
     }
 
     fn cut(&mut self, n: i64) {
         self.a = (self.a + n).mod_floor(&(self.size as i64));
-        // self.value = (self.value + n).mod_floor(&(self.size as i64));
     }
 
     fn deal_with_increment(&mut self, n: i64) {
         let inverse = extended_gcd(n, self.size as i64);
         self.a = (self.a as i128 * inverse as i128).mod_floor(&(self.size as i128)) as i64;
         self.b = (self.b as i128 * inverse as i128).mod_floor(&(self.size as i128)) as i64;
-        // self.value = (self.value as i128 * inverse as i128).mod_floor(&(self.size as i128)) as i64;
     }
 
     fn iterations(&self, n: usize) -> i128 {
@@ -656,10 +653,6 @@ mod test {
         deck.deal_into_new_stack();
         deck.deal_with_increment(65);
 
-        // println!("{}", deck.value());
-        let now = std::time::Instant::now();
-        println!("Solution: {}", deck.iterations(101741582076661));
-        // println!("{}", now.elapsed().as_nanos());
     }
 
     #[test]

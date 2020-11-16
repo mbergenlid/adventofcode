@@ -1,5 +1,5 @@
-extern crate sdl2;
 extern crate num_integer;
+extern crate sdl2;
 mod intcode;
 mod prob1;
 mod prob10;
@@ -16,6 +16,7 @@ mod prob2;
 mod prob20;
 mod prob21;
 mod prob22;
+mod prob23;
 mod prob3;
 mod prob4;
 mod prob5;
@@ -120,6 +121,10 @@ fn main() {
         22 => {
             prob22::solve_part_1();
             prob22::solve_part_2();
+        }
+        23 => {
+            prob23::solve_part_1();
+            prob23::solve_part_2();
         }
         _ => panic!("Unknown problem number"),
     }
