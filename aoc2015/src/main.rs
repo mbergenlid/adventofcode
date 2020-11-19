@@ -1,7 +1,10 @@
+extern crate md5;
 
 mod prob1;
 mod prob2;
 mod prob3;
+mod prob4;
+mod prob5;
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
@@ -23,6 +26,14 @@ fn main() {
         3 => {
             prob3::solve_part_1();
             prob3::solve_part_2();
+        }
+        4 => {
+            prob4::solve_part_1();
+            prob4::solve_part_2();
+        }
+        5 => {
+            prob5::solve_part_1();
+            prob5::solve_part_2();
         }
         _ => panic!("Unknown problem number"),
     }
