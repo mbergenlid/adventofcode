@@ -25,6 +25,7 @@ mod prob6;
 mod prob7;
 mod prob8;
 mod prob9;
+mod prob25;
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
@@ -130,6 +131,9 @@ fn main() {
         24 => {
             prob24::solve_part_1();
             prob24::solve_part_2();
+        }
+        25 => {
+            prob25::solve_part_1();
         }
         _ => panic!("Unknown problem number"),
     }
