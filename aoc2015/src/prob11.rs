@@ -1,5 +1,4 @@
 use std::str::from_utf8_unchecked;
-use std::borrow::Cow;
 
 pub fn solve_part_1() -> Password {
     let mut password = Password::new("hxbxwxba");
@@ -99,28 +98,6 @@ impl Password {
         return false;
     }
 
-    fn index_of_straight(&self) -> Option<usize> {
-        for i in 0..6 {
-            if self.value[i + 1] == self.value[i] + 1 && self.value[i + 2] == self.value[i] + 2 {
-                return Some(i+2);
-            }
-        }
-        None
-    }
-
-    fn next_pairs(&mut self) -> &str {
-        self.inc();
-        if self.value[4] <= ('y' as u8) && self.value[5] <= ('y' as u8) {
-            if self.value[6] < self.value[7] {
-                self.value[6] += 1;
-                self.value[7] = self.value[6];
-            } else {
-                self.value[7] = self.value[6];
-            }
-        }
-        unsafe { from_utf8_unchecked(self.value.as_ref()) }
-    }
-
     fn has_pairs(&self) -> bool {
         let mut first_pair: Option<usize> = None;
         for i in 0..7 {
@@ -174,10 +151,5 @@ mod test {
         assert_eq!(Password::new("abbyzzza").next_straight(), "abbzaabc");
         // hxbxwxba -> hxbxwxyz -> hxbxxabc -> hxbxxyza
         // hxbxwxba -> hxbyaabb ->
-    }
-
-    #[test]
-    fn test_next_pair() {
-        assert_eq!(Password::new("aaaaaaaa").next_pairs(), "aaaaaabb");
     }
 }

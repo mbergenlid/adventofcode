@@ -1,6 +1,7 @@
 #[macro_use] extern crate lazy_static;
 extern crate md5;
 extern crate regex;
+extern crate serde_json;
 
 mod prob1;
 mod prob2;
@@ -13,6 +14,7 @@ mod prob8;
 mod prob9;
 mod prob10;
 mod prob11;
+mod prob12;
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
@@ -66,6 +68,10 @@ fn main() {
         11 => {
             println!("Part 1: {}", prob11::solve_part_1().as_str());
             println!("Part 2: {}", prob11::solve_part_2().as_str());
+        }
+        12 => {
+            println!("Part 1: {}", prob12::solve_part_1());
+            println!("Part 2: {}", prob12::solve_part_2());
         }
         _ => panic!("Unknown problem number"),
     }
