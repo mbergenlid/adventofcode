@@ -1,5 +1,4 @@
 use std::iter::Cloned;
-use std::mem::swap;
 use std::slice::Iter;
 use std::collections::HashMap;
 
@@ -180,7 +179,7 @@ struct Permutations {
 impl Permutations {
     fn new<T: Into<String>>(vec: Vec<T>) -> Permutations {
         let length = vec.len();
-        let mut swap_indexes = vec![0; length];
+        let swap_indexes = vec![0; length];
         Permutations {
             vec: vec.into_iter().map(|x| x.into()).collect(),
             current_permutation: (0..length).collect(),
@@ -247,8 +246,7 @@ impl<'a, I: Iterator<Item = usize>> Iterator for Permutation<'a, I> {
 
 #[cfg(test)]
 mod test {
-    use crate::prob13::{Permutation, Permutations, GuestList};
-    use std::collections::HashMap;
+    use crate::prob13::{Permutations, GuestList};
 
     #[test]
     fn test() {
@@ -324,7 +322,6 @@ mod test {
 
     #[test]
     fn solve_part_1() {
-        let all_guests = vec!["Alice".to_string(), "Bob".to_string(), "Carol".to_string(), "David".to_string()];
         let mut permutations = Permutations::new(vec!["Bob", "Carol", "David"]);
         let config = vec![
             (("Alice".to_string(), "Bob".to_string()), 54),
