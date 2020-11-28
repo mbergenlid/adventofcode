@@ -25,16 +25,6 @@ fn fill(containers_used: u32, containers: &[u32], eggnog: u32) -> Vec<u32> {
     combinations
 }
 
-#[cfg(test)]
-mod test {
-    use crate::prob17::fill;
-
-    #[test]
-    fn test_part_1() {
-        assert_eq!(fill(vec![20, 15, 10, 5, 5].as_slice(), 25), 4);
-    }
-}
-
 fn input() -> Vec<u32> {
     vec![
         33, 14, 18, 20, 45, 35, 16, 35, 1, 13, 18, 13, 50, 44, 48, 6, 24, 41, 30, 42,
