@@ -1,7 +1,7 @@
 use crate::prob3::Tile::{Empty, Tree};
 
 pub fn solve_part_1() -> usize {
-    let slope = Slope::parse(INPUTg);
+    let slope = Slope::parse(INPUT);
     slope.count_trees_on_path(3, 1)
 }
 
