@@ -4,9 +4,6 @@ extern crate regex;
 
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
-        $(
-            mod $module;
-        )*
 
         fn main() {
             let args: Vec<_> = std::env::args().collect();
@@ -34,12 +31,13 @@ macro_rules! aoc {
     }
 }
 
-// mod prob1;
-// mod prob2;
-// mod prob3;
-// mod prob4;
-// mod prob5;
-// mod prob6;
+mod prob1;
+mod prob2;
+mod prob3;
+mod prob4;
+mod prob5;
+mod prob6;
+mod prob7;
 
 aoc! {
     1 => prob1,
@@ -47,5 +45,6 @@ aoc! {
     3 => prob3,
     4 => prob4,
     5 => prob5,
-    6 => prob6
+    6 => prob6,
+    7 => prob7
 }
