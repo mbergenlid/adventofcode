@@ -2,46 +2,50 @@
 extern crate lazy_static;
 extern crate regex;
 
-mod prob1;
-mod prob2;
-mod prob3;
-mod prob4;
-mod prob5;
-mod prob6;
+macro_rules! aoc {
+    ( $($m:expr => $module:ident),* ) => {
+        $(
+            mod $module;
+        )*
 
-fn main() {
-    let args: Vec<_> = std::env::args().collect();
-    if args.len() == 0 {
-        panic!("Need to specify a problem number");
+        fn main() {
+            let args: Vec<_> = std::env::args().collect();
+            if args.len() == 0 {
+                panic!("Need to specify a problem number");
+            }
+
+            let problem_num: u32 = args[1].parse::<u32>().unwrap();
+
+            use std::time::Instant;
+            match problem_num {
+                $(
+                    $m => {
+                        let start = Instant::now();
+                        let part1 = $module::solve_part_1();
+                        println!("Part 1: {} ({}µs)", part1, start.elapsed().as_micros());
+                        let start = Instant::now();
+                        let part2 = $module::solve_part_2();
+                        println!("Part 2: {} ({}µs)", part2, start.elapsed().as_micros());
+                    }
+                )*
+                _ => panic!("Unknown problem number")
+            }
+        }
     }
+}
 
-    let problem_num: u32 = args[1].parse::<u32>().unwrap();
+// mod prob1;
+// mod prob2;
+// mod prob3;
+// mod prob4;
+// mod prob5;
+// mod prob6;
 
-    match problem_num {
-        1 => {
-            println!("Part 1: {}", prob1::solve_part_1());
-            println!("Part 2: {}", prob1::solve_part_2());
-        }
-        2 => {
-            println!("Part 1: {}", prob2::solve_part_1());
-            println!("Part 2: {}", prob2::solve_part_2());
-        }
-        3 => {
-            println!("Part 1: {}", prob3::solve_part_1());
-            println!("Part 2: {}", prob3::solve_part_2());
-        }
-        4 => {
-            println!("Part 1: {}", prob4::solve_part_1());
-            println!("Part 2: {}", prob4::solve_part_2());
-        }
-        5 => {
-            println!("Part 1: {}", prob5::solve_part_1());
-            println!("Part 2: {}", prob5::solve_part_2());
-        }
-        6 => {
-            println!("Part 1: {}", prob6::solve_part_1());
-            println!("Part 2: {}", prob6::solve_part_2());
-        }
-        _ => panic!("Unknown problem number"),
-    }
+aoc! {
+    1 => prob1,
+    2 => prob2,
+    3 => prob3,
+    4 => prob4,
+    5 => prob5,
+    6 => prob6
 }
