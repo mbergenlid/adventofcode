@@ -1,6 +1,6 @@
 use std::ops::{BitAnd, BitOr};
 
-pub fn solve_part_1() -> u32 {
+pub fn solve_part_1(_: &str) -> u32 {
     include_str!("../inputs/prob6")
         .split("\n\n")
         .map(|s| {
@@ -12,7 +12,7 @@ pub fn solve_part_1() -> u32 {
         .sum()
 }
 
-pub fn solve_part_2() -> u32 {
+pub fn solve_part_2(_: &str) -> u32 {
     include_str!("../inputs/prob6")
         .split("\n\n")
         .map(|s| s.lines()

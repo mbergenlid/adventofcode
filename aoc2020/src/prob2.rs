@@ -1,16 +1,10 @@
 use regex::Regex;
-use std::fs::File;
-use std::io::Read;
 
 lazy_static! {
     static ref REGEX: Regex = Regex::new(r"(\d+)-(\d+) (\w): (\w+)").unwrap();
 }
 
-pub fn solve_part_1() -> usize {
-    let mut file = File::open("inputs/prob2").unwrap();
-    let mut input = String::new();
-    file.read_to_string(&mut input).unwrap();
-
+pub fn solve_part_1(input: &str) -> usize {
     let mut total = 0;
     for line in input.split("\n").filter(|line| !line.is_empty()) {
         let captures = REGEX
@@ -26,10 +20,7 @@ pub fn solve_part_1() -> usize {
     total
 }
 
-pub fn solve_part_2() -> usize {
-    let mut file = File::open("inputs/prob2").unwrap();
-    let mut input = String::new();
-    file.read_to_string(&mut input).unwrap();
+pub fn solve_part_2(input: &str) -> usize {
 
     let mut total = 0;
     for line in input.split("\n").filter(|line| !line.is_empty()) {

@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-pub fn solve_part_1() -> u32 {
+pub fn solve_part_1(_: &str) -> u32 {
     include_str!("../inputs/prob5")
         .lines()
         .map(|s| seat_id_of(s))
@@ -8,7 +8,7 @@ pub fn solve_part_1() -> u32 {
         .unwrap()
 }
 
-pub fn solve_part_2() -> u32 {
+pub fn solve_part_2(_: &str) -> u32 {
     let seats_taken: BTreeSet<_> = include_str!("../inputs/prob5")
         .lines()
         .map(|s| seat_id_of(s)).collect();

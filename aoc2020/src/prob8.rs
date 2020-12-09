@@ -4,8 +4,8 @@ use std::collections::HashSet;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-pub fn solve_part_1() -> i32 {
-    let mut boot_code = include_str!("../inputs/prob8")
+pub fn solve_part_1(input: &str) -> i32 {
+    let mut boot_code = input
         .parse::<BootCode>()
         .unwrap();
 
@@ -13,12 +13,8 @@ pub fn solve_part_1() -> i32 {
     boot_code.acc
 }
 
-pub fn solve_part_2() -> i32 {
-    part_2(include_str!("../inputs/prob8"))
-}
-
-fn part_2(code: &str) -> i32 {
-    let mut boot_code = code.parse::<BootCode>().unwrap();
+pub fn solve_part_2(input: &str) -> i32 {
+    let mut boot_code = input.parse::<BootCode>().unwrap();
 
     let mut last_modified_instruction = usize::MAX;
 
@@ -149,12 +145,12 @@ impl From<ParseIntError> for Error {
 
 #[cfg(test)]
 mod test {
-    use crate::prob8::part_2;
+    use crate::prob8::solve_part_2;
 
     #[test]
     fn test_part_2() {
         assert_eq!(
-            part_2(
+            solve_part_2(
                 "nop +0
 acc +1
 jmp +4

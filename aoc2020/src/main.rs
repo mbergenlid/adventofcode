@@ -18,10 +18,10 @@ macro_rules! aoc {
                 $(
                     $m => {
                         let start = Instant::now();
-                        let part1 = $module::solve_part_1();
+                        let part1 = $module::solve_part_1(include_str!(concat!("../inputs/prob", $m)));
                         println!("Part 1: {} ({}µs)", part1, start.elapsed().as_micros());
                         let start = Instant::now();
-                        let part2 = $module::solve_part_2();
+                        let part2 = $module::solve_part_2(include_str!(concat!("../inputs/prob", $m)));
                         println!("Part 2: {} ({}µs)", part2, start.elapsed().as_micros());
                     }
                 )*
@@ -39,6 +39,7 @@ mod prob5;
 mod prob6;
 mod prob7;
 mod prob8;
+mod prob9;
 
 aoc! {
     1 => prob1,
@@ -48,5 +49,6 @@ aoc! {
     5 => prob5,
     6 => prob6,
     7 => prob7,
-    8 => prob8
+    8 => prob8,
+    9 => prob9
 }

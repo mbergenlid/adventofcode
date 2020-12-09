@@ -1,4 +1,4 @@
-pub fn solve_part_1() -> u32 {
+pub fn solve_part_1(_: &str) -> u32 {
     let input = input();
     for x in input.iter() {
         if let Some(y) = input.iter().find(|&y| y + x == 2020) {
@@ -8,7 +8,7 @@ pub fn solve_part_1() -> u32 {
     panic!("Not found")
 }
 
-pub fn solve_part_2() -> u32 {
+pub fn solve_part_2(_: &str) -> u32 {
     let input = input();
     for a in input.iter() {
         for b in input.iter() {

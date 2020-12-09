@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::collections::HashMap;
 
-pub fn solve_part_1() -> usize {
+pub fn solve_part_1(_: &str) -> usize {
     include_str!("../inputs/prob4")
         .split("\n\n")
         .map(|l| Passport::parse(l))
@@ -9,7 +9,7 @@ pub fn solve_part_1() -> usize {
         .count()
 }
 
-pub fn solve_part_2() -> usize {
+pub fn solve_part_2(_: &str) -> usize {
     include_str!("../inputs/prob4")
         .split("\n\n")
         .map(|l| Passport::parse(l))

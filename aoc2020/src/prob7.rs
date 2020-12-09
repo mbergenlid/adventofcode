@@ -1,11 +1,11 @@
 use regex::Regex;
 use std::collections::{HashSet, VecDeque};
 
-pub fn solve_part_1() -> usize {
+pub fn solve_part_1(_: &str) -> usize {
     BagRules::from(include_str!("../inputs/prob7")).bags_that_can_contain("shiny gold")
 }
 
-pub fn solve_part_2() -> u32 {
+pub fn solve_part_2(_: &str) -> u32 {
     BagRules::from(include_str!("../inputs/prob7")).bags_required_inside("shiny gold")
 }
 
