@@ -1,6 +1,8 @@
-#[macro_use]
 extern crate lazy_static;
 extern crate regex;
+extern crate serde_derive;
+#[macro_use] extern crate recap;
+
 
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
@@ -44,6 +46,7 @@ mod prob10;
 mod prob11;
 mod prob12;
 mod prob13;
+mod prob14;
 
 aoc! {
     1 => prob1,
@@ -58,5 +61,6 @@ aoc! {
     10 => prob10,
     11 => prob11,
     12 => prob12,
-    13 => prob13
+    13 => prob13,
+    14 => prob14
 }
