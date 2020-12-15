@@ -1,49 +1,55 @@
-use std::collections::HashMap;
 
-pub fn solve_part_1(input: &str) -> u64 {
+pub fn solve_part_1(input: &str) -> usize {
     solve(input, 2020)
 }
 
-pub fn solve_part_2(input: &str) -> u64 {
+pub fn solve_part_2(input: &str) -> usize {
     solve(input, 30000000)
 }
 
-fn solve(input: &str, n: usize) -> u64 {
-    let vec: Vec<u64> = input.trim().split(",").map(|s| s.parse::<u64>().unwrap()).collect();
+fn solve(input: &str, n: usize) -> usize {
+    let vec: Vec<_> = input.trim().split(",").map(|s| s.parse::<usize>().unwrap()).collect();
     let length = vec.len();
-    let mut memory = MemoryGame::new(vec);
+    let mut memory = MemoryGame::new(vec, n);
     memory.nth(n-length-1).unwrap()
 }
 
 struct MemoryGame {
-    numbers: HashMap<u64, u64>,
-    last_element: (u64, u64),
+    numbers: Vec<usize>,
+    last_element: (usize, usize),
 }
 
 impl MemoryGame {
-    fn new(numbers: Vec<u64>) -> MemoryGame {
+    fn new(numbers: Vec<usize>, capacity: usize) -> MemoryGame {
+        let mut vec = vec![0; capacity];
+        for (i, &n) in numbers.iter().enumerate() {
+            vec[n] = i+1;
+        }
         MemoryGame {
-            numbers: numbers.iter().enumerate().map(|(i,n)| (*n, i as u64)).collect(),
-            last_element: numbers.last().map(|n| (*n, (numbers.len()-1) as u64)).unwrap(),
+            numbers: vec,
+            last_element: numbers.last().map(|n| (*n, numbers.len())).unwrap(),
         }
     }
 }
 
 impl Iterator for MemoryGame {
-    type Item = u64;
+    type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (last_number, last_index) = self.last_element;
-        let next_number = if let Some(index) = self.numbers.get_mut(&last_number) {
-            let i = *index;
-            *index = last_index;
-            last_index - i
+        let index = self.numbers[last_number as usize];
+        let next_number = if index > 0 {
+            last_index - index
         } else {
-            self.numbers.insert(last_number, last_index);
             0
         };
-        self.last_element = (next_number, last_index+1);
-        Some(next_number)
+        if next_number >= self.numbers.len() {
+            None
+        } else {
+            self.numbers[last_number as usize] = last_index;
+            self.last_element = (next_number, last_index+1);
+            Some(next_number)
+        }
     }
 }
 
