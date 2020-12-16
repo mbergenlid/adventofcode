@@ -1,6 +1,6 @@
 extern crate lazy_static;
 extern crate regex;
-extern crate serde_derive;
+#[macro_use] extern crate serde_derive;
 #[macro_use] extern crate recap;
 
 
@@ -48,6 +48,7 @@ mod prob12;
 mod prob13;
 mod prob14;
 mod prob15;
+mod prob16;
 
 aoc! {
     1 => prob1,
@@ -64,5 +65,6 @@ aoc! {
     12 => prob12,
     13 => prob13,
     14 => prob14,
-    15 => prob15
+    15 => prob15,
+    16 => prob16
 }
