@@ -49,6 +49,7 @@ mod prob13;
 mod prob14;
 mod prob15;
 mod prob16;
+mod prob17;
 
 aoc! {
     1 => prob1,
@@ -66,5 +67,6 @@ aoc! {
     13 => prob13,
     14 => prob14,
     15 => prob15,
-    16 => prob16
+    16 => prob16,
+    17 => prob17
 }
