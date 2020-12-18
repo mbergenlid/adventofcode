@@ -1,0 +1,15 @@
+use std::str::FromStr;
+
+grammar;
+pub Expr: i64 = {
+   <l:Expr> "+" <t:Term> => l + t,
+   <l:Expr> "*" <t:Term> => l * t,
+   <Term>
+}
+
+Term: i64 = {
+    <n:Num> => n,
+    "(" <e:Expr> ")" => e,
+};
+
+Num: i64 = <s:r"[0-9]+"> => i64::from_str(s).unwrap();
