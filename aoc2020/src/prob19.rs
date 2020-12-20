@@ -36,7 +36,7 @@ fn matches_part_2(rule_map: &HashMap<u32, Rule>, chars: &str) -> bool {
     let sub_match = sub_matches(42, rule_map, &mut chars_iterator);
     if sub_match {
         let mut match_42_count = 0;
-        let mut temp_chars_iteratorg = chars_iterator.as_str().chars();
+        let mut temp_chars_iterator = chars_iterator.as_str().chars();
         while sub_matches(42, rule_map, &mut temp_chars_iterator) {
             chars_iterator = temp_chars_iterator.as_str().chars();
             match_42_count += 1;
