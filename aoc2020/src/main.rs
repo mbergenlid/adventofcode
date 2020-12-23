@@ -1,3 +1,4 @@
+#![feature(linked_list_cursors)]
 extern crate lazy_static;
 extern crate regex;
 #[macro_use] extern crate serde_derive;
@@ -55,6 +56,7 @@ mod prob19;
 mod prob20;
 mod prob21;
 mod prob22;
+mod prob23;
 
 aoc! {
     1 => prob1,
@@ -78,5 +80,6 @@ aoc! {
     19 => prob19,
     20 => prob20,
     21 => prob21,
-    22 => prob22
+    22 => prob22,
+    23 => prob23
 }
