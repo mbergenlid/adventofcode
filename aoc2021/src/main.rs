@@ -29,7 +29,9 @@ macro_rules! aoc {
 }
 
 mod prob1;
+mod prob2;
 
 aoc! {
-    1 => prob1
+    1 => prob1,
+    2 => prob2
 }
