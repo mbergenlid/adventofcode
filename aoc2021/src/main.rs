@@ -1,4 +1,6 @@
 
+#[macro_use] extern crate recap;
+#[macro_use] extern crate serde_derive;
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
 
@@ -32,10 +34,12 @@ mod prob1;
 mod prob2;
 mod prob3;
 mod prob4;
+mod prob5;
 
 aoc! {
     1 => prob1,
     2 => prob2,
     3 => prob3,
-    4 => prob4
+    4 => prob4,
+    5 => prob5
 }
