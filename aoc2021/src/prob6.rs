@@ -13,7 +13,7 @@ fn solve(input: &str, days: u32) -> usize {
         fishes[fish] += 1;
     }
 
-    for day in 0..days {
+    for _day in 0..days {
         let zeroes = fishes[0];
         for index in 0..(fishes.len()-1) {
             fishes[index] = fishes[index+1];
@@ -22,7 +22,7 @@ fn solve(input: &str, days: u32) -> usize {
         fishes[6] += zeroes;
     }
 
-    fishes.into_iter().sum()
+    fishes.iter().sum()
 }
 
 #[cfg(test)]

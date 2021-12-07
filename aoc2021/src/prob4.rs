@@ -1,7 +1,3 @@
-#![feature(option_result_contains)]
-use std::num::ParseIntError;
-use std::panic::panic_any;
-use std::str::FromStr;
 
 struct BingoBoard {
     filled_columns: [u8; 5],
@@ -19,7 +15,7 @@ impl BingoBoard {
             .numbers
             .iter_mut()
             .enumerate()
-            .find(|(i, &mut n)| n.map(|i| i == number).unwrap_or(false))
+            .find(|(_i, &mut n)| n.map(|i| i == number).unwrap_or(false))
         {
             n.take();
             self.filled_rows[i / 5] += 1;

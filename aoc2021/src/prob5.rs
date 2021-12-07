@@ -1,8 +1,5 @@
-use std::cmp::{max, min};
 use std::collections::HashMap;
-use std::io::repeat;
 use std::iter;
-use std::ptr::replace;
 
 #[derive(Deserialize, Recap)]
 #[recap(regex = r"(?P<start_x>\d+),(?P<start_y>\d+) -> (?P<end_x>\d+),(?P<end_y>\d+)")]
@@ -47,14 +44,14 @@ fn range(line: LineSegment) -> Option<Box<dyn Iterator<Item = (u32, u32)>>> {
     let x_range: Box<dyn Iterator<Item = u32>> = if line.start_x == line.end_x {
         Box::new(iter::repeat(line.start_x))
     } else if line.start_x < line.end_x {
-        Box::new((line.start_x..=line.end_x))
+        Box::new(line.start_x..=line.end_x)
     } else {
         Box::new((line.end_x..=line.start_x).rev())
     };
     let y_range: Box<dyn Iterator<Item = u32>> = if line.start_y == line.end_y {
         Box::new(iter::repeat(line.start_y))
     } else if line.start_y < line.end_y {
-        Box::new((line.start_y..=line.end_y))
+        Box::new(line.start_y..=line.end_y)
     } else {
         Box::new((line.end_y..=line.start_y).rev())
     };
