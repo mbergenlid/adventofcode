@@ -35,11 +35,15 @@ mod prob2;
 mod prob3;
 mod prob4;
 mod prob5;
+mod prob6;
+mod prob7;
 
 aoc! {
     1 => prob1,
     2 => prob2,
     3 => prob3,
     4 => prob4,
-    5 => prob5
+    5 => prob5,
+    6 => prob6,
+    7 => prob7
 }
