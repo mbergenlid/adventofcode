@@ -1,4 +1,4 @@
-
+extern crate itertools;
 #[macro_use] extern crate recap;
 #[macro_use] extern crate serde_derive;
 macro_rules! aoc {
@@ -37,6 +37,7 @@ mod prob4;
 mod prob5;
 mod prob6;
 mod prob7;
+mod prob8;
 
 aoc! {
     1 => prob1,
@@ -45,5 +46,6 @@ aoc! {
     4 => prob4,
     5 => prob5,
     6 => prob6,
-    7 => prob7
+    7 => prob7,
+    8 => prob8
 }
