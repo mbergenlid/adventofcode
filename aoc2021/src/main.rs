@@ -41,7 +41,7 @@ mod prob8;
 mod prob9;
 mod prob10;
 mod prob11;
-// mod prob12;
+mod prob12;
 // mod prob13;
 // mod prob14;
 // mod prob15;
@@ -67,8 +67,8 @@ aoc! {
     8 => prob8,
     9 => prob9,
     10 => prob10,
-    11 => prob11
-    // 12 => prob12,
+    11 => prob11,
+    12 => prob12
     // 13 => prob13,
     // 14 => prob14,
     // 15 => prob15,
