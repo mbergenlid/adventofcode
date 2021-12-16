@@ -1,6 +1,8 @@
 extern crate itertools;
 #[macro_use] extern crate recap;
 #[macro_use] extern crate serde_derive;
+extern crate nom;
+
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
 
@@ -45,7 +47,7 @@ mod prob12;
 mod prob13;
 mod prob14;
 mod prob15;
-// mod prob16;
+mod prob16;
 // mod prob17;
 // mod prob18;
 // mod prob19;
@@ -71,8 +73,8 @@ aoc! {
     12 => prob12,
     13 => prob13,
     14 => prob14,
-    15 => prob15
-    // 16 => prob16,
+    15 => prob15,
+    16 => prob16
     // 17 => prob17,
     // 18 => prob18,
     // 19 => prob19,
