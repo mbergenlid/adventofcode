@@ -1,10 +1,8 @@
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::panic::panic_any;
-use std::hash::Hash;
 
 pub fn solve_part_1(input: &str) -> usize {
-    let mut template = input.lines().next().unwrap().to_owned();
+    let template = input.lines().next().unwrap().to_owned();
 
     let patterns: HashMap<(char, char), _> = input
         .lines()
@@ -23,7 +21,7 @@ pub fn solve_part_1(input: &str) -> usize {
         .chars()
         .zip(template.chars().skip(1))
         .map(|pair| {
-            let mut res = solve(&mut cache, &patterns, pair, 10);
+            let res = solve(&mut cache, &patterns, pair, 10);
             // println!("({:?}) -> {:?}", pair, res);
             res
         })
@@ -99,7 +97,7 @@ fn merge(map1: HashMap<char, usize>, mut map2: HashMap<char, usize>) -> HashMap<
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    let mut template = input.lines().next().unwrap().to_owned();
+    let template = input.lines().next().unwrap().to_owned();
 
     let patterns: HashMap<(char, char), _> = input
         .lines()
@@ -118,7 +116,7 @@ pub fn solve_part_2(input: &str) -> usize {
         .chars()
         .zip(template.chars().skip(1))
         .map(|pair| {
-            let mut res = solve(&mut cache, &patterns, pair, 40);
+            let res = solve(&mut cache, &patterns, pair, 40);
             // println!("({:?}) -> {:?}", pair, res);
             res
         })

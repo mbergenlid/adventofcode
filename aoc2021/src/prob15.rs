@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::BinaryHeap;
 use std::str::FromStr;
 
 pub fn solve_part_1(input: &str) -> usize {
@@ -64,7 +64,7 @@ impl Grid for Part2Grid {
 
         let sub_row = row % self.original_side_length;
         let sub_col = col % self.original_side_length;
-        let value = (self.data[sub_row * self.original_side_length + sub_col] + increase);
+        let value = self.data[sub_row * self.original_side_length + sub_col] + increase;
         if value > 9 { value % 9 } else { value }
     }
 
