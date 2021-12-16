@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::path::Path;
 
 pub fn solve_part_1(input: &str) -> usize {
     let graph = Graph(
