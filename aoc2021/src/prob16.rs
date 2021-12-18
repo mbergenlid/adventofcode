@@ -8,6 +8,7 @@ use nom::bits::{bits, streaming::take};
 use nom::combinator::{map, map_res};
 use std::iter::Iterator;
 use std::panic::panic_any;
+use nom::sequence::tuple;
 
 pub fn solve_part_1(input: &str) -> usize {
     let bits = to_bits(input);
@@ -119,8 +120,7 @@ fn packet(input: &[u8]) -> IResult<&[u8], Packet> {
 }
 
 fn parse_packet(input: (&[u8], usize)) -> IResult<(&[u8], usize), Packet> {
-    let (rest, version): (_, u8) = map(take(3usize), |version| version)(input)?;
-    let (rest, type_id): (_, u8) = take(3usize)(rest)?;
+    let (rest, (version, type_id)): (_, (u8, u8)) = tuple((take(3usize), take(3usize)))(input)?;
 
     let (rest, packet_type): (_, PacketType) = match type_id {
         4 => {
@@ -187,7 +187,7 @@ fn parse_packet(input: (&[u8], usize)) -> IResult<(&[u8], usize), Packet> {
 
 #[cfg(test)]
 mod test {
-    use crate::prob16::OperatorType::Sum;
+    use crate::prob16::OperatorType::{Sum, Max, LessThan};
     use crate::prob16::Packet;
     use crate::prob16::PacketType::{LITERAL, OPERATOR};
 
@@ -214,7 +214,7 @@ mod test {
                 Packet {
                     version: 1,
                     packet_type: OPERATOR(
-                        Sum,
+                        LessThan,
                         vec![
                             Packet {
                                 version: 6,
@@ -240,7 +240,7 @@ mod test {
                 Packet {
                     version: 7,
                     packet_type: OPERATOR(
-                        Sum,
+                        Max,
                         vec![
                             Packet {
                                 version: 2,
