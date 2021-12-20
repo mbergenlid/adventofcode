@@ -1,7 +1,5 @@
 use crate::prob17::Result::{Hit, Missed, OverShot};
-use std::cmp::max;
 use std::collections::HashSet;
-use itertools::all;
 
 pub fn solve_part_1(_input: &str) -> usize {
     //target area: x=236..262, y=-78..-58
@@ -10,12 +8,10 @@ pub fn solve_part_1(_input: &str) -> usize {
         bottom_right: (262, -78),
     };
 
-    let lower_x = (1889f64.sqrt() / 2f64 - 0.5).ceil() as i32;
-    let upper_x = (3f64 * 233f64.sqrt() / 2f64 - 0.5).floor() as i32;
-    solve_1(&target, lower_x, upper_x)
+    solve_1(&target)
 }
 
-fn solve_1(target: &TargetArea, lower_x: i32, upper_x: i32) -> usize {
+fn solve_1(target: &TargetArea) -> usize {
     let mut max_height = 0;
     for y_velocity in -100..1000 {
         for x_velocity in 0..1000 {
@@ -51,7 +47,7 @@ fn solve_2(target: &TargetArea) -> usize {
             };
             let res = simulate(&mut probe, &target);
             match res {
-                Hit(height) => {
+                Hit(_) => {
                     all_vectors.insert((x_velocity, y_velocity));
                 }
                 OverShot => {}
@@ -144,8 +140,6 @@ mod test {
                 top_left: (20, -5),
                 bottom_right: (30, -10),
             },
-            6,
-            7,
         );
         assert_eq!(res, 45);
     }
@@ -158,6 +152,4 @@ mod test {
         });
         assert_eq!(res, 112);
     }
-
-    const TESTCASE: &'static str = "target area: x=20..30, y=-10..-5";
 }
