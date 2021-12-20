@@ -3,11 +3,8 @@ use nom::IResult;
 
 use crate::prob16::OperatorType::{GreaterThan, Max, Min, Product, Sum, LessThan, Equal};
 use crate::prob16::PacketType::{LITERAL, OPERATOR};
-use itertools::Itertools;
 use nom::bits::{bits, streaming::take};
-use nom::combinator::{map, map_res};
 use std::iter::Iterator;
-use std::panic::panic_any;
 use nom::sequence::tuple;
 
 pub fn solve_part_1(input: &str) -> usize {
@@ -187,7 +184,7 @@ fn parse_packet(input: (&[u8], usize)) -> IResult<(&[u8], usize), Packet> {
 
 #[cfg(test)]
 mod test {
-    use crate::prob16::OperatorType::{Sum, Max, LessThan};
+    use crate::prob16::OperatorType::{Max, LessThan};
     use crate::prob16::Packet;
     use crate::prob16::PacketType::{LITERAL, OPERATOR};
 
@@ -281,5 +278,4 @@ mod test {
         assert_eq!(super::solve_part_2("9C0141080250320F1802104A08"), 1);
     }
 
-    const TESTCASE: &'static str = "";
 }
