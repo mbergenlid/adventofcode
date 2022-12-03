@@ -73,7 +73,7 @@ aoc! {
     15 => prob15,
     16 => prob16,
     17 => prob17,
-    18 => prob18
+    18 => prob18,
     19 => prob19,
     20 => prob20,
     21 => prob21,
