@@ -31,54 +31,54 @@ macro_rules! aoc {
 
 mod prob1;
 mod prob2;
-// mod prob3;
-// mod prob4;
-// mod prob5;
-// mod prob6;
-// mod prob7;
-// mod prob8;
-// mod prob9;
-// mod prob10;
-// mod prob11;
-// mod prob12;
-// mod prob13;
-// mod prob14;
-// mod prob15;
-// mod prob16;
-// mod prob17;
-// mod prob18;
-// mod prob19;
-// mod prob20;
-// mod prob21;
-// mod prob22;
-// mod prob23;
-// mod prob24;
-// mod prob25;
+mod prob3;
+mod prob4;
+mod prob5;
+mod prob6;
+mod prob7;
+mod prob8;
+mod prob9;
+mod prob10;
+mod prob11;
+mod prob12;
+mod prob13;
+mod prob14;
+mod prob15;
+mod prob16;
+mod prob17;
+mod prob18;
+mod prob19;
+mod prob20;
+mod prob21;
+mod prob22;
+mod prob23;
+mod prob24;
+mod prob25;
 
 aoc! {
     1 => prob1,
-    2 => prob2
-    // 3 => prob3,
-    // 4 => prob4,
-    // 5 => prob5,
-    // 6 => prob6,
-    // 7 => prob7,
-    // 8 => prob8,
-    // 9 => prob9,
-    // 10 => prob10,
-    // 11 => prob11,
-    // 12 => prob12,
-    // 13 => prob13,
-    // 14 => prob14,
-    // 15 => prob15,
-    // 16 => prob16,
-    // 17 => prob17,
-    // 18 => prob18
-    // 19 => prob19,
-    // 20 => prob20,
-    // 21 => prob21,
-    // 22 => prob22,
-    // 23 => prob23,
-    // 24 => prob24,
-    // 25 => prob25
+    2 => prob2,
+    3 => prob3,
+    4 => prob4,
+    5 => prob5,
+    6 => prob6,
+    7 => prob7,
+    8 => prob8,
+    9 => prob9,
+    10 => prob10,
+    11 => prob11,
+    12 => prob12,
+    13 => prob13,
+    14 => prob14,
+    15 => prob15,
+    16 => prob16,
+    17 => prob17,
+    18 => prob18
+    19 => prob19,
+    20 => prob20,
+    21 => prob21,
+    22 => prob22,
+    23 => prob23,
+    24 => prob24,
+    25 => prob25
 }
