@@ -1,4 +1,5 @@
 extern crate itertools;
+extern crate core;
 
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
