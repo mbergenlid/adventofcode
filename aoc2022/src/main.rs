@@ -1,5 +1,7 @@
 extern crate itertools;
 extern crate core;
+#[macro_use] extern crate recap;
+#[macro_use] extern crate serde_derive;
 
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
