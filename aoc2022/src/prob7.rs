@@ -1,7 +1,5 @@
 use std::cmp::min;
 use crate::prob7::Node::{Directory, File};
-use itertools::Itertools;
-use std::fmt::format;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -13,8 +11,8 @@ enum Node {
 impl Node {
     fn name(&self) -> &str {
         match self {
-            Node::Directory(n, _) => n.as_str(),
-            Node::File(n, _) => n.as_str(),
+            Directory(n, _) => n.as_str(),
+            File(n, _) => n.as_str(),
         }
     }
 }
@@ -41,7 +39,7 @@ fn read_directory_tree<'a, I>(lines: &mut I, current_dir: &mut Node)
 where
     I: Iterator<Item = &'a str> + Clone,
 {
-    if let Node::Directory(name, children) = current_dir {
+    if let Directory(_, children) = current_dir {
         while let Some(line) = lines.next() {
             if line.starts_with("$ cd ..") {
                 return;

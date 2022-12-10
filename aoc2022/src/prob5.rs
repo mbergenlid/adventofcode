@@ -1,11 +1,9 @@
 use std::collections::VecDeque;
-use nom::character::complete::char;
 
 fn parse_stacks<'a>(input: impl Iterator<Item = &'a str>) -> Vec<VecDeque<char>> {
     let mut res = vec![VecDeque::new(); 9];
 
     for line in input {
-        let mut chars = line.chars();
         for i in (1..).step_by(4).take(9) {
            match line.chars().nth(i) {
                Some(' ') => {},

@@ -1,7 +1,5 @@
-use std::cmp::max;
-use crate::prob9;
 use std::collections::HashSet;
-use std::fmt::{Debug, Formatter, Pointer};
+
 use crate::prob9::Direction::{Down, Left, Right, Up};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]

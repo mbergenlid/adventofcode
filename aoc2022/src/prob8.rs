@@ -1,6 +1,4 @@
 use std::cmp::max;
-use std::env::current_dir;
-use std::fmt::format;
 
 type Grid = Vec<Vec<u8>>;
 
@@ -76,7 +74,7 @@ where
     F: Fn((usize, usize)) -> Option<(usize, usize)>,
 {
     let mut prev_pos = pos;
-    let mut original_height = grid[pos.0][pos.1];
+    let original_height = grid[pos.0][pos.1];
     while let Some(next_pos) = next(prev_pos) {
         let next_height = grid.get(next_pos.0).and_then(|row| row.get(next_pos.1));
 
@@ -144,7 +142,7 @@ fn viewing_distance<F>(grid: &Grid, pos: (usize, usize), next: F) -> usize
 {
     let mut count = 0;
     let mut prev_pos = pos;
-    let mut original_height = grid[pos.0][pos.1];
+    let original_height = grid[pos.0][pos.1];
     while let Some(next_pos) = next(prev_pos) {
         let next_height = grid.get(next_pos.0).and_then(|row| row.get(next_pos.1));
 
