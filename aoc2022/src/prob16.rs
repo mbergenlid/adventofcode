@@ -1,15 +1,11 @@
-use itertools::{Itertools, min};
 use std::cmp::max;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::os::macos::raw::stat;
-use std::time::Instant;
 
 #[derive(Clone)]
 struct Valve {
     id: String,
     rate: u32,
     tunnels: Vec<String>,
-    steps: HashMap<String, u32>,
 }
 
 impl Valve {
@@ -37,7 +33,6 @@ impl Valve {
             id: valve_id,
             rate: flow_rate,
             tunnels,
-            steps: HashMap::new(),
         }
     }
 

@@ -2,13 +2,12 @@ use itertools::Itertools;
 use nom::bytes::complete::tag;
 use nom::character::complete;
 use nom::character::complete::char;
-use nom::combinator::{complete, map};
-use nom::multi::{separated_list0, separated_list1};
-use nom::sequence::{pair, separated_pair};
+use nom::combinator::map;
+use nom::multi::separated_list1;
+use nom::sequence::separated_pair;
 use nom::IResult;
 use std::cmp::{max, min};
 use std::collections::HashSet;
-use std::iter::zip;
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 struct Point {

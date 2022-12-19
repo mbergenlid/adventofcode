@@ -7,7 +7,7 @@ use nom::multi::separated_list0;
 use nom::sequence::{preceded, terminated};
 use nom::IResult;
 use std::cmp::Ordering;
-use std::fmt::{Debug, Formatter, Pointer};
+use std::fmt::{Debug, Formatter};
 use itertools::Itertools;
 
 #[derive(Eq, PartialEq, Clone)]

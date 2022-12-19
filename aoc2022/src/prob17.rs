@@ -1,5 +1,4 @@
-use std::fmt::{Debug, Formatter};
-use itertools::Itertools;
+use std::fmt::Debug;
 use crate::prob17::StreamJet::{Left, Right};
 
 #[derive(Eq, PartialEq)]
@@ -75,10 +74,6 @@ impl Block {
         }
     }
 
-    fn upper_bound(&self) -> u32 {
-        self.points.iter().map(|p| p.y).max().unwrap()
-    }
-
     fn hit_wall_right(&self) -> bool {
         self.points.iter().any(|p| p.x == 0)
     }
@@ -133,7 +128,6 @@ pub fn solve_part_1(input: &str) -> usize {
 
     let mut cave: Vec<[bool; 8]> = Vec::new();
     let mut top = 0_u32;
-    let mut jet_count = 0;
     let mut jet_iterator = jets.iter().cycle();
     let mut last_height = 0;
     for round in 0..10000 {
@@ -143,7 +137,7 @@ pub fn solve_part_1(input: &str) -> usize {
         //     break;
         // }
 
-        let current_height = cave.iter().enumerate().rev().find(|(i, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0);
+        let current_height = cave.iter().enumerate().rev().find(|(_, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0);
         print!("{}", current_height - last_height);
         last_height = current_height;
         let mut jets_used = Vec::new();
@@ -152,7 +146,6 @@ pub fn solve_part_1(input: &str) -> usize {
                 Left => {jets_used.push(Left); block.move_left()},
                 Right => {jets_used.push(Right);block.move_right()},
             };
-            jet_count += 1;
 
             if !(new_block.hit_wall_right() || new_block.hit_wall_left() || new_block.hit_any_other_block(&cave)) {
                 block = new_block;
@@ -162,7 +155,7 @@ pub fn solve_part_1(input: &str) -> usize {
 
             if new_block_2.hit_floor() || new_block_2.hit_any_other_block(&cave) {
                 block.stop(&mut cave);
-                top = cave.iter().enumerate().rev().find(|(i, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0) as u32;
+                top = cave.iter().enumerate().rev().find(|(_, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0) as u32;
                 // println!("============ Round {} ===========", round);
                 // println!("Jets used {:?}", jets_used);
                 // print_cave(&cave);
@@ -177,7 +170,7 @@ pub fn solve_part_1(input: &str) -> usize {
     println!();
     // println!("{}", cave.len());
     // print_cave(&cave);
-    cave.iter().enumerate().rev().find(|(i, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0)
+    cave.iter().enumerate().rev().find(|(_, row)| row.contains(&true)).map(|(i, _)| i + 1).unwrap_or(0)
 }
 
 pub fn solve_part_2(_input: &str) -> usize {
@@ -203,6 +196,7 @@ pub fn solve_part_2(_input: &str) -> usize {
     height
 }
 
+#[allow(unused)]
 fn print_cave(cave: &Vec<[bool; 8]>) {
     for row in cave.iter().rev() {
         print!("|");
