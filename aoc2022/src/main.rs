@@ -1,3 +1,4 @@
+#![feature(int_roundings)]
 extern crate itertools;
 extern crate core;
 #[macro_use] extern crate recap;
