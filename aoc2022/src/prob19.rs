@@ -2,7 +2,6 @@ use nom::bytes::complete::tag;
 use nom::character::complete;
 use nom::sequence::{preceded, separated_pair, terminated};
 use std::cmp::{max, Ordering};
-use std::os::macos::raw::stat;
 use std::str::FromStr;
 
 #[derive(Debug)]
