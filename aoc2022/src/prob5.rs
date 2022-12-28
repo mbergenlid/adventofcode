@@ -5,12 +5,12 @@ fn parse_stacks<'a>(input: impl Iterator<Item = &'a str>) -> Vec<VecDeque<char>>
 
     for line in input {
         for i in (1..).step_by(4).take(9) {
-           match line.chars().nth(i) {
-               Some(' ') => {},
-               Some(c) => res[i/4].push_back(c),
-               None => {}
-           };
-       }
+            match line.chars().nth(i) {
+                Some(' ') => {}
+                Some(c) => res[i / 4].push_back(c),
+                None => {}
+            };
+        }
     }
     res
 }
@@ -33,8 +33,10 @@ pub fn solve_part_1(input: &str) -> usize {
         let m: Move = m_str.parse().unwrap();
 
         for _ in 0..m.amount {
-            let x = stacks[m.from-1].pop_front().expect("Unable to pop from emtpy stack");
-            stacks[m.to-1].push_front(x);
+            let x = stacks[m.from - 1]
+                .pop_front()
+                .expect("Unable to pop from emtpy stack");
+            stacks[m.to - 1].push_front(x);
         }
     }
 
@@ -53,11 +55,13 @@ pub fn solve_part_2(input: &str) -> usize {
 
         let mut to_push = Vec::new();
         for _ in 0..m.amount {
-            let x = stacks[m.from-1].pop_front().expect("Unable to pop from emtpy stack");
+            let x = stacks[m.from - 1]
+                .pop_front()
+                .expect("Unable to pop from emtpy stack");
             to_push.push(x);
         }
         for x in to_push.into_iter().rev() {
-            stacks[m.to-1].push_front(x);
+            stacks[m.to - 1].push_front(x);
         }
     }
 

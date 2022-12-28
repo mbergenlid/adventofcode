@@ -65,7 +65,7 @@ impl Valve {
     }
 }
 
-fn  dynamic_programming(valves: &Vec<&Valve>, connections: &Vec<Vec<u32>>) -> Vec<Vec<Vec<u32>>> {
+fn dynamic_programming(valves: &Vec<&Valve>, connections: &Vec<Vec<u32>>) -> Vec<Vec<Vec<u32>>> {
     //state[min][set] = max pressure when `min` minutes left
     let num_valves = valves.len();
     let mut state = vec![vec![vec![0; num_valves]; 1 << (num_valves)]; 30];
@@ -88,8 +88,7 @@ fn  dynamic_programming(valves: &Vec<&Valve>, connections: &Vec<Vec<u32>>) -> Ve
 
                             max_pressure = max(
                                 valves[n].rate * min_left_if_opening
-                                    + state[(min_left_if_opening) as usize][comb & !(0b1 << n)]
-                                        [n],
+                                    + state[(min_left_if_opening) as usize][comb & !(0b1 << n)][n],
                                 max_pressure,
                             );
                         }
@@ -145,7 +144,8 @@ pub fn solve_part_1(input: &str) -> usize {
 
         max_pressure = max(
             max_pressure,
-            (30 - steps)*valve.rate + result[30-steps as usize][0b111111111111111 & !(0b1 << i)][i]
+            (30 - steps) * valve.rate
+                + result[30 - steps as usize][0b111111111111111 & !(0b1 << i)][i],
         );
     }
     println!("{:?}", result[28][0b111011]);
@@ -165,19 +165,23 @@ pub fn solve_part_2(input: &str) -> usize {
     for (index, valve) in valves_with_rate.iter().enumerate() {
         let steps = start_valve.steps_to(valve.id.as_str(), &valves);
         let minutes_left = 30 - (steps + 1);
-        queue.push_back((index, minutes_left, minutes_left*valve.rate, 0b1 << index));
-        best.insert(0b1 << index, minutes_left*valve.rate);
+        queue.push_back((index, minutes_left, minutes_left * valve.rate, 0b1 << index));
+        best.insert(0b1 << index, minutes_left * valve.rate);
     }
 
     let mut states = 0;
     let mut skipped_because_unreachable = 0;
     while let Some((valve_index, minutes_left, best_pressure, visited)) = queue.pop_front() {
         states += 1;
-        for (n_index, _) in valves_with_rate.iter().enumerate().filter(|(index, _)| visited & (0b1 << index) == 0) {
+        for (n_index, _) in valves_with_rate
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| visited & (0b1 << index) == 0)
+        {
             let steps = state[valve_index][n_index];
             if steps + 1 < minutes_left {
                 let minutes_left = minutes_left - (steps + 1);
-                let pressure = best_pressure + minutes_left*valves_with_rate[n_index].rate;
+                let pressure = best_pressure + minutes_left * valves_with_rate[n_index].rate;
                 queue.push_back((n_index, minutes_left, pressure, visited | (0b1 << n_index)));
                 if let Some(current_best) = best.get_mut(&(visited | (0b1 << n_index))) {
                     if pressure > *current_best {
@@ -193,20 +197,25 @@ pub fn solve_part_2(input: &str) -> usize {
                     if visited_mut % 2 == 0 {
                         non_visited += 1;
                     }
-                    visited_mut = visited_mut /2;
+                    visited_mut = visited_mut / 2;
                 }
                 skipped_because_unreachable = skipped_because_unreachable + (non_visited);
             }
         }
     }
 
-    println!("Total states: {}, States seen {}, skipped {}", states + skipped_because_unreachable, states, skipped_because_unreachable);
+    println!(
+        "Total states: {}, States seen {}, skipped {}",
+        states + skipped_because_unreachable,
+        states,
+        skipped_because_unreachable
+    );
 
     let mut best_pressure = 0;
     for (index, (key1, value1)) in best.iter().enumerate() {
-        for (key2, value2) in best.iter().skip(index+1) {
+        for (key2, value2) in best.iter().skip(index + 1) {
             if key1 & key2 == 0 {
-                best_pressure = max(best_pressure, value1+value2);
+                best_pressure = max(best_pressure, value1 + value2);
             }
         }
     }

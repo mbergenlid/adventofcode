@@ -1,6 +1,4 @@
-
 pub fn solve_part_1(input: &str) -> usize {
-
     let mut signal_strength = 0;
     let mut cycle = 0;
     let mut x_register = 1;
@@ -8,19 +6,18 @@ pub fn solve_part_1(input: &str) -> usize {
         if instr.starts_with("noop") {
             cycle += 1;
             if cycle == 20 || (cycle - 20) % 40 == 0 {
-                signal_strength +=  cycle*x_register;
+                signal_strength += cycle * x_register;
             }
         } else if instr.starts_with("addx") {
             cycle += 1;
             if cycle == 20 || (cycle - 20) % 40 == 0 {
-                signal_strength +=  cycle*x_register;
+                signal_strength += cycle * x_register;
             }
             cycle += 1;
             if cycle == 20 || (cycle - 20) % 40 == 0 {
-                signal_strength +=  cycle*x_register;
+                signal_strength += cycle * x_register;
             }
             x_register += instr["addr ".len()..].parse::<i32>().expect("Not a number");
-
         }
     }
 
@@ -34,7 +31,6 @@ struct CRT {
 }
 
 impl CRT {
-
     fn draw_pixel(&mut self, x_register: i32) {
         let current_pixel = self.current_pixel as i32;
         if current_pixel >= x_register - 1 && current_pixel <= x_register + 1 {
@@ -67,7 +63,6 @@ pub fn solve_part_2(input: &str) -> usize {
     0
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::prob10::{solve_part_1, solve_part_2};
@@ -81,7 +76,6 @@ mod test {
     fn test2() {
         assert_eq!(solve_part_2(INPUT), 0);
     }
-
 
     const INPUT: &'static str = r"addx 15
 addx -11

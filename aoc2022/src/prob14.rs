@@ -160,7 +160,9 @@ impl Grid {
         if self.floor.is_some() {
             false
         } else {
-            !(point.x >= self.x_bounds.0 && point.x <= self.x_bounds.1 && point.y <= self.y_bounds.1)
+            !(point.x >= self.x_bounds.0
+                && point.x <= self.x_bounds.1
+                && point.y <= self.y_bounds.1)
         }
     }
 }

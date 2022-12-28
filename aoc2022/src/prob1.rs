@@ -1,7 +1,6 @@
 use itertools::Itertools;
 
 pub fn solve_part_1(input: &str) -> usize {
-
     let mut max = 0;
     let mut current: u32 = 0;
     for line in input.lines() {

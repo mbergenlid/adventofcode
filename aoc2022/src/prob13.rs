@@ -1,4 +1,5 @@
 use crate::prob13::Packet::{List, Literal};
+use itertools::Itertools;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::char;
@@ -8,7 +9,6 @@ use nom::sequence::{preceded, terminated};
 use nom::IResult;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
-use itertools::Itertools;
 
 #[derive(Eq, PartialEq, Clone)]
 enum Packet {
@@ -20,7 +20,7 @@ impl Debug for Packet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Literal(v) => write!(f, "{}", v),
-            List(list) => write!(f, "{:?}", list)
+            List(list) => write!(f, "{:?}", list),
         }
     }
 }
@@ -55,10 +55,14 @@ impl Packet {
 }
 
 pub fn solve_part_1(input: &str) -> usize {
-    input.split("\n\n")
+    input
+        .split("\n\n")
         .map(|line| {
             let mut split = line.split("\n");
-            (Packet::parse(split.next().unwrap()).unwrap(), Packet::parse(split.next().unwrap()).unwrap())
+            (
+                Packet::parse(split.next().unwrap()).unwrap(),
+                Packet::parse(split.next().unwrap()).unwrap(),
+            )
         })
         .enumerate()
         .filter(|(_, (p1, p2))| {
@@ -66,12 +70,13 @@ pub fn solve_part_1(input: &str) -> usize {
 
             p1.cmp(p2) != Ordering::Greater
         })
-        .map(|(i, _)| i+1)
+        .map(|(i, _)| i + 1)
         .sum::<usize>()
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    let mut packets: Vec<Packet> = input.lines()
+    let mut packets: Vec<Packet> = input
+        .lines()
         .filter(|line| !line.is_empty())
         .map(|line| Packet::parse(line).unwrap().1)
         .collect();
@@ -81,10 +86,12 @@ pub fn solve_part_2(input: &str) -> usize {
     packets.push(divider_packet_1.clone());
     packets.push(divider_packet_2.clone());
 
-    packets.into_iter().sorted()
+    packets
+        .into_iter()
+        .sorted()
         .enumerate()
         .filter(|(_, p)| *p == divider_packet_1 || *p == divider_packet_2)
-        .map(|(index, _)| index+1)
+        .map(|(index, _)| index + 1)
         .product::<usize>()
 }
 

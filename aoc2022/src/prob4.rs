@@ -1,4 +1,3 @@
-
 #[derive(Deserialize, Recap)]
 #[recap(regex = r"(?P<start_1>\d+)-(?P<end_1>\d+),(?P<start_2>\d+)-(?P<end_2>\d+)")]
 struct Segments {
@@ -21,14 +20,16 @@ impl Segments {
 }
 
 pub fn solve_part_1(input: &str) -> usize {
-    input.lines()
+    input
+        .lines()
         .map(|line| line.parse::<Segments>().unwrap())
         .filter(|line| line.one_fully_contains_the_other())
         .count()
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    input.lines()
+    input
+        .lines()
         .map(|line| line.parse::<Segments>().unwrap())
         .filter(|line| line.segments_overlap())
         .count()

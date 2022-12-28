@@ -89,7 +89,11 @@ fn find_tuning_frequency(mut covered_ranges: Vec<Vec<RangeInclusive<i64>>>) -> u
             let merged = try_merge(&range, ranges);
             if !merged {
                 println!("Found it on {} {:?} {:?}", i, range, ranges);
-                println!("Result = ({:?} .. {:?}", ranges.iter().map(|r| *r.start()).min(), ranges.iter().map(|r| *r.end()).max());
+                println!(
+                    "Result = ({:?} .. {:?}",
+                    ranges.iter().map(|r| *r.start()).min(),
+                    ranges.iter().map(|r| *r.end()).max()
+                );
 
                 let min_x = ranges.iter().map(|r| *r.start()).min().unwrap();
                 let max_x = ranges.iter().map(|r| *r.end()).max().unwrap();
@@ -101,7 +105,6 @@ fn find_tuning_frequency(mut covered_ranges: Vec<Vec<RangeInclusive<i64>>>) -> u
                 } else {
                     panic!("ahaaaha");
                 }
-
             }
         }
     }
@@ -111,9 +114,7 @@ fn find_tuning_frequency(mut covered_ranges: Vec<Vec<RangeInclusive<i64>>>) -> u
 fn try_merge(range: &RangeInclusive<i64>, ranges: &mut Vec<RangeInclusive<i64>>) -> bool {
     for other_range in ranges.iter_mut() {
         if range.start() <= other_range.start() && range.end() >= other_range.start()
-            ||
-            range.start() > other_range.start() && *range.start() <= (*other_range.end() + 1)
-
+            || range.start() > other_range.start() && *range.start() <= (*other_range.end() + 1)
         {
             //merge them
             *other_range =

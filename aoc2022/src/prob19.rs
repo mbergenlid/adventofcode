@@ -84,7 +84,7 @@ impl PartialOrd for State {
     }
 }
 
-impl <const M: u32> FromStr for Blueprint<M> {
+impl<const M: u32> FromStr for Blueprint<M> {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -133,7 +133,6 @@ impl <const M: u32> FromStr for Blueprint<M> {
 }
 
 impl<const M: u32> Blueprint<M> {
-
     fn solve(&self, state: State) -> u32 {
         if state.minute >= M {
             return state.total_geode;
@@ -189,9 +188,7 @@ impl<const M: u32> Blueprint<M> {
         {
             let minutes_inc = minutes_until_obsedian_buildable + 1;
             max_geode = max(
-                self.solve(
-                    state.advance(minutes_inc).buy_obsidian(self),
-                ),
+                self.solve(state.advance(minutes_inc).buy_obsidian(self)),
                 max_geode,
             );
         }
@@ -207,8 +204,7 @@ impl<const M: u32> Blueprint<M> {
         {
             let minutes_inc = minutes_until_clay_buildable + 1;
             max_geode = max(
-                self.solve(state.advance(minutes_inc).buy_clay(self),
-                ),
+                self.solve(state.advance(minutes_inc).buy_clay(self)),
                 max_geode,
             );
         }
@@ -222,15 +218,14 @@ impl<const M: u32> Blueprint<M> {
         if minutes_until_ore_buildable < M - state.minute && state.ore_robots < 4 {
             let minutes_inc = minutes_until_ore_buildable + 1;
             max_geode = max(
-                self.solve(state.advance(minutes_inc).buy_ore(self),
-                ),
+                self.solve(state.advance(minutes_inc).buy_ore(self)),
                 max_geode,
             );
         }
 
         max(
-            state.total_geode + state.geode_robots*(M-state.minute),
-            max_geode
+            state.total_geode + state.geode_robots * (M - state.minute),
+            max_geode,
         )
     }
 }
@@ -244,19 +239,17 @@ pub fn solve_part_1(input: &str) -> usize {
         //     b
         // })
         .map(|b| {
-            let result = b.solve(
-                State {
-                    minute: 0,
-                    total_ore: 0,
-                    total_clay: 0,
-                    total_obsidian: 0,
-                    total_geode: 0,
-                    ore_robots: 1,
-                    clay_robots: 0,
-                    obsidian_robots: 0,
-                    geode_robots: 0,
-                },
-            );
+            let result = b.solve(State {
+                minute: 0,
+                total_ore: 0,
+                total_clay: 0,
+                total_obsidian: 0,
+                total_geode: 0,
+                ore_robots: 1,
+                clay_robots: 0,
+                obsidian_robots: 0,
+                geode_robots: 0,
+            });
             result * b.index
         })
         .sum::<u32>() as usize
@@ -268,19 +261,17 @@ pub fn solve_part_2(input: &str) -> usize {
         .map(|line| line.parse::<Blueprint<32>>().unwrap())
         .take(3)
         .map(|b| {
-            let result = b.solve(
-                State {
-                    minute: 0,
-                    total_ore: 0,
-                    total_clay: 0,
-                    total_obsidian: 0,
-                    total_geode: 0,
-                    ore_robots: 1,
-                    clay_robots: 0,
-                    obsidian_robots: 0,
-                    geode_robots: 0,
-                },
-            );
+            let result = b.solve(State {
+                minute: 0,
+                total_ore: 0,
+                total_clay: 0,
+                total_obsidian: 0,
+                total_geode: 0,
+                ore_robots: 1,
+                clay_robots: 0,
+                obsidian_robots: 0,
+                geode_robots: 0,
+            });
             result
         })
         .product::<u32>() as usize
@@ -300,8 +291,6 @@ mod test {
     fn test_3() {
         assert_eq!(solve_part_2(INPUT), 3596);
     }
-
-
 
     const INPUT: &'static str = r"Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.";

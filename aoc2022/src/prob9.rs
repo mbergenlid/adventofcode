@@ -6,12 +6,12 @@ use crate::prob9::Direction::{Down, Left, Right, Up};
 struct Pos((i32, i32));
 
 impl Pos {
-    fn x(&self) -> i32  {
-        self.0.0
+    fn x(&self) -> i32 {
+        self.0 .0
     }
 
-    fn y(&self) -> i32  {
-        self.0.1
+    fn y(&self) -> i32 {
+        self.0 .1
     }
 
     fn step(&self, dir: Direction) -> Pos {
@@ -19,7 +19,7 @@ impl Pos {
             Up => Pos((self.x(), self.y() + 1)),
             Down => Pos((self.x(), self.y() - 1)),
             Left => Pos((self.x() - 1, self.y())),
-            Right =>Pos((self.x() + 1, self.y())),
+            Right => Pos((self.x() + 1, self.y())),
         }
     }
 
@@ -27,7 +27,6 @@ impl Pos {
         let x_diff = (self.x() - to.x()).abs();
         let y_diff = (self.y() - to.y()).abs();
         if x_diff > 1 || y_diff > 1 {
-
             let x_dir = if self.x() > to.x() {
                 Some(Left)
             } else if self.x() < to.x() {
@@ -36,7 +35,7 @@ impl Pos {
                 None
             };
 
-            let y_dir = if self.y() > to.y()  {
+            let y_dir = if self.y() > to.y() {
                 Some(Down)
             } else if self.y() < to.y() {
                 Some(Up)
@@ -50,7 +49,6 @@ impl Pos {
         }
     }
 }
-
 
 struct Rope {
     knots: Vec<Pos>,

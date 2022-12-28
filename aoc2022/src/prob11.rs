@@ -1,5 +1,5 @@
-use std::ops::Deref;
 use itertools::Itertools;
+use std::ops::Deref;
 
 type Item = u128;
 
@@ -19,7 +19,7 @@ struct Test {
 fn calculate_monkey_business(rounds: usize, worry_divider: Item) -> usize {
     let mut monkeys = monkeys();
 
-    let modulo = 2*7*3*17*11*19*5*13;
+    let modulo = 2 * 7 * 3 * 17 * 11 * 19 * 5 * 13;
     for _ in 0..rounds {
         for i in 0..monkeys.len() {
             let mut pass = Vec::new();
@@ -45,10 +45,15 @@ fn calculate_monkey_business(rounds: usize, worry_divider: Item) -> usize {
                 monkeys[next_monkey].items.push(worry_level);
             }
         }
-
     }
 
-    monkeys.iter().map(|m| m.inspections).sorted().rev().take(2).product()
+    monkeys
+        .iter()
+        .map(|m| m.inspections)
+        .sorted()
+        .rev()
+        .take(2)
+        .product()
 }
 
 pub fn solve_part_1(_input: &str) -> usize {
@@ -124,7 +129,7 @@ fn monkeys() -> Vec<Monkey> {
         },
         Monkey {
             items: vec![97, 94, 79, 88],
-            operation: Box::new(|old| { old * old}),
+            operation: Box::new(|old| old * old),
             test: Test {
                 condition: Box::new(|item| item % 5 == 0),
                 if_true: 2,

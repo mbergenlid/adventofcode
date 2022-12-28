@@ -66,7 +66,7 @@ pub fn solve_part_1(input: &str) -> usize {
         }
     }
 
-    count + grid.len()*2 + (grid[0].len()-2)*2
+    count + grid.len() * 2 + (grid[0].len() - 2) * 2
 }
 
 fn tree_viewable<F>(grid: &Grid, pos: (usize, usize), next: F) -> bool
@@ -133,12 +133,11 @@ pub fn solve_part_2(input: &str) -> usize {
     }
 
     max_scenic_score
-
 }
 
 fn viewing_distance<F>(grid: &Grid, pos: (usize, usize), next: F) -> usize
-    where
-        F: Fn((usize, usize)) -> Option<(usize, usize)>,
+where
+    F: Fn((usize, usize)) -> Option<(usize, usize)>,
 {
     let mut count = 0;
     let mut prev_pos = pos;
@@ -160,7 +159,6 @@ fn viewing_distance<F>(grid: &Grid, pos: (usize, usize), next: F) -> usize
     }
     count
 }
-
 
 #[cfg(test)]
 mod test {

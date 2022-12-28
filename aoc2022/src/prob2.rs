@@ -1,20 +1,21 @@
-use std::str::FromStr;
 use crate::prob2::RockPaperScissors::{Paper, Rock, Scissors};
 use crate::prob2::RoundResult::{Draw, Loss, Win};
+use std::str::FromStr;
 
 #[derive(Copy, Clone)]
 enum RockPaperScissors {
-    Rock, Paper, Scissors
+    Rock,
+    Paper,
+    Scissors,
 }
 
 impl RockPaperScissors {
-
     fn from(v: &str) -> Option<RockPaperScissors> {
         match v {
             "A" | "X" => Some(RockPaperScissors::Rock),
             "B" | "Y" => Some(RockPaperScissors::Paper),
             "C" | "Z" => Some(RockPaperScissors::Scissors),
-            _ => None
+            _ => None,
         }
     }
 
@@ -32,30 +33,35 @@ impl RockPaperScissors {
             RockPaperScissors::Rock => match opponent {
                 RockPaperScissors::Rock => Draw,
                 RockPaperScissors::Paper => Loss,
-                RockPaperScissors::Scissors => Win
+                RockPaperScissors::Scissors => Win,
             },
             RockPaperScissors::Paper => match opponent {
                 RockPaperScissors::Rock => Win,
                 RockPaperScissors::Paper => Draw,
-                RockPaperScissors::Scissors => Loss
+                RockPaperScissors::Scissors => Loss,
             },
             RockPaperScissors::Scissors => match opponent {
                 RockPaperScissors::Rock => Loss,
                 RockPaperScissors::Paper => Win,
-                RockPaperScissors::Scissors => Draw
-            }
+                RockPaperScissors::Scissors => Draw,
+            },
         }
     }
 
     fn pick(&self, result: &RoundResult) -> RockPaperScissors {
-        *[ Paper, Rock, Scissors].iter().filter(|r| r.result(self) == *result).next().unwrap()
+        *[Paper, Rock, Scissors]
+            .iter()
+            .filter(|r| r.result(self) == *result)
+            .next()
+            .unwrap()
     }
-
 }
 
 #[derive(Eq, PartialEq)]
 enum RoundResult {
-    Win, Loss, Draw
+    Win,
+    Loss,
+    Draw,
 }
 
 impl RoundResult {
@@ -63,7 +69,7 @@ impl RoundResult {
         match self {
             Win => 6,
             Loss => 0,
-            Draw => 3
+            Draw => 3,
         }
     }
 }
@@ -76,29 +82,35 @@ impl FromStr for RoundResult {
             "X" => Ok(Loss),
             "Y" => Ok(Draw),
             "Z" => Ok(Win),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
 
 pub fn solve_part_1(input: &str) -> usize {
-    input.lines().map(|line| {
-        let mut split = line.split(" ");
-        let opponent = RockPaperScissors::from(split.next().unwrap()).unwrap();
-        let me = RockPaperScissors::from(split.next().unwrap()).unwrap();
+    input
+        .lines()
+        .map(|line| {
+            let mut split = line.split(" ");
+            let opponent = RockPaperScissors::from(split.next().unwrap()).unwrap();
+            let me = RockPaperScissors::from(split.next().unwrap()).unwrap();
 
-        me.score(&opponent)
-    }).sum()
+            me.score(&opponent)
+        })
+        .sum()
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    input.lines().map(|line| {
-        let mut split = line.split(" ");
-        let opponent = RockPaperScissors::from(split.next().unwrap()).unwrap();
-        let expected_result = split.next().unwrap().parse::<RoundResult>().unwrap();
+    input
+        .lines()
+        .map(|line| {
+            let mut split = line.split(" ");
+            let opponent = RockPaperScissors::from(split.next().unwrap()).unwrap();
+            let expected_result = split.next().unwrap().parse::<RoundResult>().unwrap();
 
-        let me = opponent.pick(&expected_result);
+            let me = opponent.pick(&expected_result);
 
-        me.score(&opponent)
-    }).sum()
+            me.score(&opponent)
+        })
+        .sum()
 }

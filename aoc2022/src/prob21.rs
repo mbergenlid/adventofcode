@@ -1,3 +1,4 @@
+use crate::prob21::Expression::{Number, Polynomial};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete;
@@ -5,17 +6,16 @@ use nom::character::complete::alpha1;
 use nom::combinator::map;
 use nom::error::VerboseError;
 use nom::sequence::separated_pair;
+use num::integer::gcd;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Deref, Div, Mul, Sub};
-use num::integer::gcd;
-use crate::prob21::Expression::{Number, Polynomial};
 
 enum Expression {
     Number(i64),
 
-    Polynomial(Poly)
+    Polynomial(Poly),
 }
 
 #[derive(Copy, Clone)]
@@ -28,7 +28,7 @@ impl Default for Fraction {
     fn default() -> Self {
         Fraction {
             nominator: 0,
-            denominator: 1
+            denominator: 1,
         }
     }
 }
@@ -37,12 +37,12 @@ impl Add<i64> for Fraction {
     type Output = Self;
 
     fn add(self, rhs: i64) -> Self::Output {
-        let nominator = self.nominator + rhs*self.denominator;
+        let nominator = self.nominator + rhs * self.denominator;
 
         let gcd = gcd(nominator, self.denominator);
         Fraction {
-            nominator: nominator/gcd,
-            denominator: self.denominator/gcd,
+            nominator: nominator / gcd,
+            denominator: self.denominator / gcd,
         }
     }
 }
@@ -59,12 +59,12 @@ impl Sub<Fraction> for i64 {
     type Output = Fraction;
 
     fn sub(self, rhs: Fraction) -> Self::Output {
-        let nominator = self*rhs.denominator - rhs.nominator;
+        let nominator = self * rhs.denominator - rhs.nominator;
 
         let gcd = gcd(nominator, rhs.denominator);
         Fraction {
-            nominator: nominator/gcd,
-            denominator: rhs.denominator/gcd,
+            nominator: nominator / gcd,
+            denominator: rhs.denominator / gcd,
         }
     }
 }
@@ -73,12 +73,12 @@ impl Mul<&i64> for Fraction {
     type Output = Self;
 
     fn mul(self, rhs: &i64) -> Self::Output {
-        let nominator = self.nominator*rhs;
+        let nominator = self.nominator * rhs;
         let gcd = gcd(nominator, self.denominator);
 
         Fraction {
-            nominator: nominator/gcd,
-            denominator: self.denominator/gcd,
+            nominator: nominator / gcd,
+            denominator: self.denominator / gcd,
         }
     }
 }
@@ -87,12 +87,12 @@ impl Div<&i64> for Fraction {
     type Output = Self;
 
     fn div(self, rhs: &i64) -> Self::Output {
-        let denominator = self.denominator*rhs;
+        let denominator = self.denominator * rhs;
         let gcd = gcd(denominator, self.nominator);
 
         Fraction {
-            nominator: self.nominator/gcd,
-            denominator: denominator/gcd,
+            nominator: self.nominator / gcd,
+            denominator: denominator / gcd,
         }
     }
 }
@@ -106,7 +106,14 @@ impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Number(n) => write!(f, "{}", n),
-            Polynomial(p) => write!(f, "{}x/{} + {}/{}", p.coefficient.nominator, p.coefficient.denominator, p.term.nominator, p.term.denominator),
+            Polynomial(p) => write!(
+                f,
+                "{}x/{} + {}/{}",
+                p.coefficient.nominator,
+                p.coefficient.denominator,
+                p.term.nominator,
+                p.term.denominator
+            ),
         }
     }
 }
@@ -116,9 +123,15 @@ impl Add for Expression {
 
     fn add(self, rhs: Self) -> Self::Output {
         let res = match (&self, &rhs) {
-            (Number(n1), Number(n2)) => Number(n1+n2),
-            (Number(n1), Polynomial(p)) => Polynomial(Poly { term: p.term + *n1, ..*p}),
-            (Polynomial(p), Number(n1)) => Polynomial(Poly { term: p.term + *n1, ..*p}),
+            (Number(n1), Number(n2)) => Number(n1 + n2),
+            (Number(n1), Polynomial(p)) => Polynomial(Poly {
+                term: p.term + *n1,
+                ..*p
+            }),
+            (Polynomial(p), Number(n1)) => Polynomial(Poly {
+                term: p.term + *n1,
+                ..*p
+            }),
             (Polynomial(_p1), Polynomial(_p2)) => todo!(),
         };
         res
@@ -130,9 +143,15 @@ impl Sub for Expression {
 
     fn sub(self, rhs: Self) -> Self::Output {
         let res = match (&self, &rhs) {
-            (Number(n1), Number(n2)) => Number(n1-n2),
-            (Number(n1), Polynomial(p)) => Polynomial(Poly { term: *n1 - p.term, coefficient: p.coefficient* &-1}),
-            (Polynomial(p), Number(n1)) => Polynomial(Poly { term: p.term - *n1, ..*p}),
+            (Number(n1), Number(n2)) => Number(n1 - n2),
+            (Number(n1), Polynomial(p)) => Polynomial(Poly {
+                term: *n1 - p.term,
+                coefficient: p.coefficient * &-1,
+            }),
+            (Polynomial(p), Number(n1)) => Polynomial(Poly {
+                term: p.term - *n1,
+                ..*p
+            }),
             (Polynomial(_p1), Polynomial(_p2)) => todo!(),
         };
         res
@@ -146,9 +165,17 @@ impl Mul for Expression {
     //150 = ((4 + ((x * 2) - 6)) / 4)
     fn mul(self, rhs: Self) -> Self::Output {
         let res = match (&self, &rhs) {
-            (Number(n1), Number(n2)) => Number(n1*n2),
-            (Number(n1), Polynomial(p)) => Polynomial(Poly { coefficient: p.coefficient * n1, term: p.term * n1, ..*p}),
-            (Polynomial(p), Number(n1)) => Polynomial(Poly { coefficient: p.coefficient * n1, term: p.term * n1, ..*p}),
+            (Number(n1), Number(n2)) => Number(n1 * n2),
+            (Number(n1), Polynomial(p)) => Polynomial(Poly {
+                coefficient: p.coefficient * n1,
+                term: p.term * n1,
+                ..*p
+            }),
+            (Polynomial(p), Number(n1)) => Polynomial(Poly {
+                coefficient: p.coefficient * n1,
+                term: p.term * n1,
+                ..*p
+            }),
             (Polynomial(_p1), Polynomial(_p2)) => todo!(),
         };
         res
@@ -160,9 +187,17 @@ impl Div for Expression {
 
     fn div(self, rhs: Self) -> Self::Output {
         let res = match (&self, &rhs) {
-            (Number(n1), Number(n2)) => Number(n1/n2),
-            (Number(n1), Polynomial(p)) => Polynomial(Poly { coefficient: p.coefficient / n1, term: p.term / n1, ..*p}),
-            (Polynomial(p), Number(n1)) => Polynomial(Poly { coefficient: p.coefficient / n1, term: p.term / n1, ..*p}),
+            (Number(n1), Number(n2)) => Number(n1 / n2),
+            (Number(n1), Polynomial(p)) => Polynomial(Poly {
+                coefficient: p.coefficient / n1,
+                term: p.term / n1,
+                ..*p
+            }),
+            (Polynomial(p), Number(n1)) => Polynomial(Poly {
+                coefficient: p.coefficient / n1,
+                term: p.term / n1,
+                ..*p
+            }),
             (Polynomial(_p1), Polynomial(_p2)) => todo!(),
         };
         res
@@ -254,7 +289,13 @@ impl Monkeys {
 
     fn expression(&self, monkey: &str) -> Expression {
         if monkey == "humn" {
-            Polynomial(Poly { coefficient: Fraction { nominator: 1, denominator: 1 }, term: Fraction::default()})
+            Polynomial(Poly {
+                coefficient: Fraction {
+                    nominator: 1,
+                    denominator: 1,
+                },
+                term: Fraction::default(),
+            })
         } else if let Some(m) = self.data.get(monkey) {
             let res = match m.borrow().deref() {
                 Monkey::Number(n) => Number(*n),

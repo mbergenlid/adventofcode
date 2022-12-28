@@ -1,8 +1,10 @@
 #![feature(int_roundings)]
-extern crate itertools;
 extern crate core;
-#[macro_use] extern crate recap;
-#[macro_use] extern crate serde_derive;
+extern crate itertools;
+#[macro_use]
+extern crate recap;
+#[macro_use]
+extern crate serde_derive;
 
 macro_rules! aoc {
     ( $($m:expr => $module:ident),* ) => {
@@ -34,14 +36,6 @@ macro_rules! aoc {
 }
 
 mod prob1;
-mod prob2;
-mod prob3;
-mod prob4;
-mod prob5;
-mod prob6;
-mod prob7;
-mod prob8;
-mod prob9;
 mod prob10;
 mod prob11;
 mod prob12;
@@ -52,12 +46,20 @@ mod prob16;
 mod prob17;
 mod prob18;
 mod prob19;
+mod prob2;
 mod prob20;
 mod prob21;
 mod prob22;
 mod prob23;
 mod prob24;
 mod prob25;
+mod prob3;
+mod prob4;
+mod prob5;
+mod prob6;
+mod prob7;
+mod prob8;
+mod prob9;
 
 aoc! {
     1 => prob1,

@@ -1,5 +1,5 @@
-use std::cmp::min;
 use crate::prob7::Node::{Directory, File};
+use std::cmp::min;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -76,14 +76,17 @@ fn find_nodes_with_size(node: &Node) -> usize {
     match node {
         Directory(_, children) => {
             let size = size(node);
-            let children_size = children.iter().map(|c| find_nodes_with_size(c)).sum::<usize>();
+            let children_size = children
+                .iter()
+                .map(|c| find_nodes_with_size(c))
+                .sum::<usize>();
             if size <= 100000 {
                 size + children_size
             } else {
                 children_size
             }
         }
-        File(_, _) => 0
+        File(_, _) => 0,
     }
 }
 
@@ -93,34 +96,38 @@ pub fn solve_part_1(input: &str) -> usize {
 
     //println!("{:?}", root);
     find_nodes_with_size(&root)
-
 }
 
 pub fn solve_part_2(input: &str) -> usize {
     let mut root = Directory("/".to_string(), Vec::new());
     read_directory_tree(&mut input.lines().skip(1), &mut root);
 
-
     let used_space = size(&root);
     let additional_free_space_required = 30000000 - (70000000 - used_space);
     find_smallest_dir_with_size(&root, additional_free_space_required, usize::MAX)
 }
 
-
-fn find_smallest_dir_with_size(node: &Node, at_least: usize, mut smallest_dir_so_far: usize) -> usize {
+fn find_smallest_dir_with_size(
+    node: &Node,
+    at_least: usize,
+    mut smallest_dir_so_far: usize,
+) -> usize {
     match node {
         Directory(_, children) => {
             let size = size(node);
             if size >= at_least {
                 smallest_dir_so_far = min(smallest_dir_so_far, size);
-                let children_smallest = children.iter()
-                    .map(|c| find_smallest_dir_with_size(c, at_least, smallest_dir_so_far)).min().unwrap();
+                let children_smallest = children
+                    .iter()
+                    .map(|c| find_smallest_dir_with_size(c, at_least, smallest_dir_so_far))
+                    .min()
+                    .unwrap();
 
                 min(smallest_dir_so_far, children_smallest)
             } else {
                 usize::MAX
             }
         }
-        File(_, _) => usize::MAX
+        File(_, _) => usize::MAX,
     }
 }

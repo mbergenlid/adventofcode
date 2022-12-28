@@ -6,9 +6,8 @@ struct Mod {
 }
 
 impl Mod {
-
     fn new(value: usize, m: usize) -> Self {
-        Mod {value, m}
+        Mod { value, m }
     }
 
     fn inc(&mut self) -> usize {
@@ -27,12 +26,19 @@ impl Mod {
 }
 
 pub fn solve_part_1(input: &str) -> i64 {
-    let original = input.lines().map(|line| line.parse::<i64>().unwrap()).collect::<Vec<_>>();
+    let original = input
+        .lines()
+        .map(|line| line.parse::<i64>().unwrap())
+        .collect::<Vec<_>>();
     solve(original, 1)
 }
 
 pub fn solve_part_2(input: &str) -> i64 {
-    let original = input.lines().map(|line| line.parse::<i64>().unwrap()).map(|n| n*811589153).collect::<Vec<_>>();
+    let original = input
+        .lines()
+        .map(|line| line.parse::<i64>().unwrap())
+        .map(|n| n * 811589153)
+        .collect::<Vec<_>>();
     solve(original, 10)
 }
 
@@ -43,31 +49,34 @@ fn solve(original: Vec<i64>, rounds: usize) -> i64 {
 
     // println!("{:?}", original);
     for _ in 0..rounds {
-
         for original_index in 0..original.len() {
-            let (index, &(_, &n)) = copy.iter().enumerate().find(|(_, (i, _))| *i == original_index).expect("Error");
-
+            let (index, &(_, &n)) = copy
+                .iter()
+                .enumerate()
+                .find(|(_, (i, _))| *i == original_index)
+                .expect("Error");
 
             if n >= 0 {
                 let mut i = Mod::new(index, modulo);
-                for _ in 0..(n%((modulo as i64)-1)) {
+                for _ in 0..(n % ((modulo as i64) - 1)) {
                     let current = i.value;
                     copy.swap(current, i.inc());
                 }
             } else {
                 let mut i = Mod::new(index, modulo);
-                for _ in 0..(n.abs()%((modulo as i64)-1)) {
+                for _ in 0..(n.abs() % ((modulo as i64) - 1)) {
                     let current = i.value;
                     copy.swap(current, i.dec());
                 }
             }
-
         }
     }
 
     let (index, _) = copy.iter().find_position(|(_, &x)| x == 0).unwrap();
 
-    copy[(index + 1000) % modulo].1 + copy[(index + 2000) % modulo].1 + copy[(index + 3000) % modulo].1
+    copy[(index + 1000) % modulo].1
+        + copy[(index + 2000) % modulo].1
+        + copy[(index + 3000) % modulo].1
 }
 
 #[cfg(test)]
