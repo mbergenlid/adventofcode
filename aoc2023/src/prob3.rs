@@ -9,7 +9,7 @@ pub fn solve_part_1(input: &str) -> usize {
             .iter()
             .any(|p| engine.symbols.contains_key(p))
         {
-            sum += part.number;
+            sum += dbg!(part.number);
         }
     }
 
