@@ -71,7 +71,7 @@ mod test {
 
     #[test]
     fn solve_part_2() {
-        assert_eq!(super::solve_part_2(TEST_INPUT), 8410);
+        assert_eq!(super::solve(TEST_INPUT, 100 - 1), 8410);
     }
 
     const TEST_INPUT: &'static str = "...#......
