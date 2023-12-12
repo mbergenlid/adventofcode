@@ -1,9 +1,98 @@
-pub fn solve_part_1(_input: &str) -> usize {
-    todo!()
+use itertools::Itertools;
+
+pub fn solve_part_1(input: &str) -> usize {
+    input
+        .lines()
+        .map(|line| {
+            let (data, groups) = line.split_whitespace().collect_tuple().unwrap();
+            let data = data.chars().collect::<Vec<_>>();
+            let groups = groups
+                .split(",")
+                .map(|c| c.parse::<usize>().unwrap())
+                .collect::<Vec<_>>();
+            count_arrangements_dp(data.as_slice(), groups.as_slice())
+        })
+        .sum()
 }
 
-pub fn solve_part_2(_input: &str) -> usize {
-    todo!()
+fn count_arrangements_dp(data: &[char], groups: &[usize]) -> usize {
+    let mut result = vec![vec![0; groups.len() + 1]; data.len() + 2];
+
+    result[data.len()][groups.len()] = 1;
+    result[data.len() + 1][groups.len()] = 1;
+    for g in 0..groups.len() {
+        result[data.len()][g] = 0;
+        result[data.len() + 1][g] = 0;
+    }
+
+    for index in (0..data.len()).rev() {
+        if data[index] != '#' {
+            result[index][groups.len()] = 1;
+        } else {
+            break;
+        }
+    }
+
+    for index in (0..data.len()).rev() {
+        for g_index in (0..groups.len()).rev() {
+            let group_size = groups[g_index];
+            let group_end_index = index + group_size;
+
+            if data[index] == '#' {
+                if index == 0 || data[index - 1] != '#' {
+                    if (group_end_index <= data.len()
+                        && data[index..group_end_index].iter().all(|&c| c != '.'))
+                        && (group_end_index >= data.len() || data[group_end_index] != '#')
+                    {
+                        result[index][g_index] = 1 * result[group_end_index + 1][g_index + 1];
+                    } else {
+                        result[index][g_index] = 0;
+                    }
+                } else {
+                    result[index][g_index] = 0;
+                }
+            } else if data[index] == '?' {
+                let can_be_damaged = {
+                    (group_end_index <= data.len()
+                        && data[index..group_end_index].iter().all(|&c| c != '.'))
+                        && (group_end_index >= data.len() || data[group_end_index] != '#')
+                        && (index == 0 || data[index - 1] != '#')
+
+                    //TODO: All groups < g_index, can they fit before index..
+                };
+
+                let if_damaged = if can_be_damaged {
+                    1 * result[group_end_index + 1][g_index + 1]
+                } else {
+                    0
+                };
+
+                result[index][g_index] = if_damaged + result[index + 1][g_index]
+            } else {
+                result[index][g_index] = result[index + 1][g_index]
+            }
+        }
+    }
+    result[0][0]
+}
+
+pub fn solve_part_2(input: &str) -> usize {
+    input
+        .lines()
+        .map(|line| {
+            let (data, groups) = line.split_whitespace().collect_tuple().unwrap();
+
+            let data = (0..5).map(|_| data).join("?").chars().collect::<Vec<_>>();
+
+            let groups = (0..5)
+                .map(|_| groups)
+                .join(",")
+                .split(",")
+                .map(|c| c.parse::<usize>().unwrap())
+                .collect::<Vec<_>>();
+            count_arrangements_dp(data.as_slice(), groups.as_slice())
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -11,13 +100,1053 @@ mod test {
 
     #[test]
     fn solve_part_1() {
-        assert_eq!(super::solve_part_1(TEST_INPUT), 0);
+        assert_eq!(super::solve_part_1(TEST_INPUT), 21);
+    }
+    #[test]
+    fn solve_part_1_real() {
+        assert_eq!(super::solve_part_1(REAL_INPUT), 16);
     }
 
     #[test]
     fn solve_part_2() {
-        assert_eq!(super::solve_part_2(TEST_INPUT), 0);
+        assert_eq!(super::solve_part_2(TEST_INPUT), 525152);
     }
 
-    const TEST_INPUT: &'static str = "";
+    const TEST_INPUT: &'static str = "???.### 1,1,3
+.??..??...?##. 1,1,3
+?#?#?#?#?#?#?#? 1,3,1,6
+????.#...#... 4,1,1
+????.######..#####. 1,6,5
+?###???????? 3,2,1";
+
+    const REAL_INPUT: &'static str = "???#?????? 1,1,1";
 }
+
+// 1 * 1 * 1 .  *2   1 . 1 .   2 . 1 . 1 .   2 . 1 . 1 .  2    1 . 1
+//????.#...#...?????.#...#...?????.#...#...?????.#...#...?????.#...#...
+//4    ,1,1,4,1,1,4,1,1,4,1,1,4,1,1
+
+// 2   2 .   1 .2
+//.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.
+//1,1,3
+
+//???????##?????#?#?        9,6
+
+//[index][groups_used]
+//answer is [0][0]
+
+//[18][2] = 1
+//[18][1] =
+//[18][0] = 0
+//[17][2] = 1
+//[17][1] = 0
+//[16][2] = 0
+//[12][2] = 0
+//[12][1] = 1
+//[12][0] = 0
+//[11][1] = 1*[18][2] + [12][1] = 2
+//[10][1] = 0 + [11][1] = 2
+
+//[0][0] = (1*[10][1]) + [1][0]
+
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 106
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 31
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 40
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 80
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 30
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 29
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 48
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 36
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 70
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 28
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 30
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 39
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 17
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 32
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 27
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 19
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 43
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 38
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 48
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 21
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 19
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 17
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 21
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 38
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 51
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 36
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 25
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 65
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 22
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 41
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 166
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 39
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 33
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 75
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 56
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 22
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 161
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 30
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 28
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 28
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 17
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 35
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 19
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 35
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 240
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 34
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 111
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 77
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 46
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 35
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 24
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 25
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 106
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 21
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 94
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 66
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 36
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 29
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 22
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 13
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 45
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 14
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 8
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 56
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 55
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 70
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 30
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 11
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 12
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 16
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 29
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 21
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 21
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 9
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 10
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 28
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 18
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 6
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 5
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 15
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 7
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 20
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 4
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 3
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 1
+//[src/prob12.rs:13] count_arrangements(&mut data, groups.as_slice(), 0) = 2
+//Part 1: 7857 (552189µs)
