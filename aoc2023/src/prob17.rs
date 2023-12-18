@@ -176,16 +176,6 @@ impl Direction {
             Direction::Right(s) => Some(*s),
         }
     }
-
-    fn inc(self) -> Direction {
-        match self {
-            Direction::None => panic!(),
-            Direction::Up(s) => Direction::Up(s + 1),
-            Direction::Left(s) => Direction::Left(s + 1),
-            Direction::Down(s) => Direction::Down(s + 1),
-            Direction::Right(s) => Direction::Right(s + 1),
-        }
-    }
 }
 
 impl Grid {
