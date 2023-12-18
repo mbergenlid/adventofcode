@@ -1,13 +1,11 @@
-use std::{
-    collections::{HashSet, VecDeque},
-    ops::RangeInclusive,
-};
+use std::ops::RangeInclusive;
 
-use itertools::{all, Itertools};
+use itertools::Itertools;
 
 pub fn solve_part_1(input: &str) -> usize {
     let mut borders = Vec::with_capacity(input.lines().count());
     let mut current = (0, 0);
+    let mut directions = Vec::with_capacity(borders.capacity());
     for line in input.lines() {
         let (dir, steps) = line
             .split_whitespace()
@@ -17,6 +15,7 @@ pub fn solve_part_1(input: &str) -> usize {
         let steps = steps.parse::<i64>().unwrap();
         match dir {
             "U" => {
+                directions.push('U');
                 borders.push(Line::Vertical(Vertical {
                     x: current.0,
                     y: current.1..=current.1 + steps - 1,
@@ -24,13 +23,16 @@ pub fn solve_part_1(input: &str) -> usize {
                 current.1 += steps;
             }
             "R" => {
+                directions.push('R');
                 borders.push(Line::Horizontal(Horizontal {
                     y: current.1,
                     x: current.0..=current.0 + steps - 1,
+                    should_count: false,
                 }));
                 current.0 += steps;
             }
             "D" => {
+                directions.push('D');
                 borders.push(Line::Vertical(Vertical {
                     x: current.0,
                     y: current.1 - steps + 1..=current.1,
@@ -38,13 +40,36 @@ pub fn solve_part_1(input: &str) -> usize {
                 current.1 -= steps;
             }
             "L" => {
+                directions.push('L');
                 borders.push(Line::Horizontal(Horizontal {
                     y: current.1,
                     x: current.0 - steps + 1..=current.0,
+                    should_count: false,
                 }));
                 current.0 -= steps;
             }
             _ => unreachable!(),
+        }
+    }
+
+    for (index, line) in borders.iter_mut().enumerate() {
+        match line {
+            Line::Horizontal(h) => {
+                let prev_index = if index == 0 {
+                    directions.len() - 1
+                } else {
+                    index - 1
+                };
+                let next_index = if index == directions.len() - 1 {
+                    0
+                } else {
+                    index + 1
+                };
+                if directions[prev_index] != directions[next_index] {
+                    h.should_count = true;
+                }
+            }
+            Line::Vertical(_) => {}
         }
     }
 
@@ -84,96 +109,231 @@ pub fn solve_part_1(input: &str) -> usize {
     let mut grid =
         vec![vec!['.'; (max_x - min_x).abs() as usize + 1]; (max_y - min_y).abs() as usize + 1];
 
-    let mut counter = 0;
-    for x in min_x..=max_x {
-        for y in min_y..=max_y {
-            if !borders.iter().any(|line| line.contains((x, y))) {
-                //let hit_line_up = borders.iter().any(|line| line.strictly_above(x, y));
-                //let hit_line_right = borders.iter().any(|line| line.strictly_right(x, y));
-                //let hit_line_below = borders.iter().any(|line| line.strictly_below(x, y));
-                //let hit_line_left = borders.iter().any(|line| line.strictly_left(x, y));
+    let sorted_by_x = borders
+        .iter()
+        .sorted_by_key(|line| match line {
+            Line::Horizontal(h) => *h.x.start(),
+            Line::Vertical(v) => v.x,
+        })
+        .collect::<Vec<_>>();
 
-                let mut lines_crossed = 0;
-                for b_index in 0..borders.len() {
-                    match &borders[b_index] {
-                        Line::Horizontal(h) => {
-                            if x < *h.x.start() && h.y == y {
-                                let prev_index = if b_index == 0 {
-                                    borders.len() - 1
-                                } else {
-                                    b_index - 1
-                                };
-                                let next_index = if b_index == borders.len() - 1 {
-                                    0
-                                } else {
-                                    b_index + 1
-                                };
-                                if let (Line::Vertical(v_prev), Line::Vertical(v_next)) =
-                                    (&borders[prev_index], &borders[next_index])
-                                {
-                                    if *v_prev.y.start() < h.y && *v_next.y.start() < h.y {
-                                        lines_crossed += 1;
-                                    } else if *v_prev.y.end() > h.y && *v_next.y.end() > h.y {
-                                        lines_crossed += 1;
-                                    }
+    let mut verticals = borders
+        .iter()
+        .filter_map(|line| match line {
+            Line::Vertical(v) => Some((*v.y.start(), *v.y.end())),
+            Line::Horizontal(_) => None,
+        })
+        .flat_map(move |(start, end)| [start, end])
+        .sorted()
+        .unique()
+        .collect::<Vec<_>>();
+    verticals.push(max_y + 1);
+    let ranges = verticals
+        .iter()
+        .zip(verticals.iter().skip(1))
+        .map(|(s, e)| s..e)
+        .collect::<Vec<_>>();
+
+    println!("{:?}", ranges);
+    println!("{:?}", sorted_by_x);
+
+    let mut counter = 0;
+    for range in ranges {
+        let mut lines_crossed = 0;
+        let mut prev_x = 0;
+        for &line in sorted_by_x.iter() {
+            match line {
+                Line::Horizontal(h) => {
+                    if h.y == *range.start {
+                        assert!(*range.end == *range.start + 1, "Range {:?}", range);
+
+                        counter += (h.x.end() - h.x.start() + 1) as usize;
+                        for x in *h.x.start()..=*h.x.end() {
+                            if grid[(h.y - min_y) as usize][(x - min_x) as usize] == '#' {
+                                println!(
+                                    "Double entry horizontal line {} {}",
+                                    (h.y - min_y) as usize,
+                                    (x - min_x) as usize
+                                );
+                            }
+                            grid[(h.y - min_y) as usize][(x - min_x) as usize] = '#';
+                        }
+                        if lines_crossed % 2 == 1 {
+                            counter += (h.x.start() - prev_x) as usize;
+                            for x in prev_x..*h.x.start() {
+                                if grid[(h.y - min_y) as usize][(x - min_x) as usize] == '#' {
+                                    println!(
+                                        "Double entry horizontal extra {} {}",
+                                        (h.y - min_y) as usize,
+                                        (x - min_x) as usize
+                                    );
                                 }
+                                grid[(h.y - min_y) as usize][(x - min_x) as usize] = '#';
                             }
                         }
-                        Line::Vertical(v) => {
-                            if x < v.x && v.y.contains(&y) {
-                                lines_crossed += 1
-                            }
+                        prev_x = h.x.end() + 1;
+                        if h.should_count {
+                            lines_crossed += 1;
                         }
                     }
                 }
-                //if hit_line_up && hit_line_below && hit_line_right && hit_line_left {
-                if lines_crossed % 2 == 1 {
-                    grid[(y - min_y) as usize][(x - min_x) as usize] = '+';
-                    counter += 1;
-                } else {
-                    grid[(y - min_y) as usize][(x - min_x) as usize] = '.';
+                Line::Vertical(v) => {
+                    if v.y.contains(range.start) {
+                        if lines_crossed % 2 == 1 {
+                            counter += ((range.end - range.start) * (v.x - prev_x + 1)) as usize;
+
+                            for y in *range.start..*range.end {
+                                for x in prev_x..=v.x {
+                                    if grid[(y - min_y) as usize][(x - min_x) as usize] == '#' {
+                                        println!("Double entry vertical {} {}", (y), (x));
+                                    }
+                                    grid[(y - min_y) as usize][(x - min_x) as usize] = '#';
+                                }
+                            }
+                        }
+                        lines_crossed += 1;
+                        prev_x = v.x;
+                    }
                 }
-            } else {
-                grid[(y - min_y) as usize][(x - min_x) as usize] = '#';
             }
         }
     }
+
     for row in grid.into_iter().rev() {
         for col in row {
             print!("{}", col);
         }
         println!();
     }
-    counter + borders.iter().map(|line| line.count()).sum::<usize>()
+    counter
+
+    //let mut counter = 0;
+    //for x in min_x..=max_x {
+    //    for y in min_y..=max_y {
+    //        if !borders.iter().any(|line| line.contains((x, y))) {
+    //            let mut lines_crossed = 0;
+    //            for b_index in 0..borders.len() {
+    //                match &borders[b_index] {
+    //                    Line::Horizontal(h) => {
+    //                        if x < *h.x.start() && h.y == y {
+    //                            let prev_index = if b_index == 0 {
+    //                                borders.len() - 1
+    //                            } else {
+    //                                b_index - 1
+    //                            };
+    //                            let next_index = if b_index == borders.len() - 1 {
+    //                                0
+    //                            } else {
+    //                                b_index + 1
+    //                            };
+    //                            if let (Line::Vertical(v_prev), Line::Vertical(v_next)) =
+    //                                (&borders[prev_index], &borders[next_index])
+    //                            {
+    //                                if *v_prev.y.start() < h.y && *v_next.y.start() < h.y {
+    //                                    lines_crossed += 1;
+    //                                } else if *v_prev.y.end() > h.y && *v_next.y.end() > h.y {
+    //                                    lines_crossed += 1;
+    //                                }
+    //                            }
+    //                        }
+    //                    }
+    //                    Line::Vertical(v) => {
+    //                        if x < v.x && v.y.contains(&y) {
+    //                            lines_crossed += 1
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //            //if hit_line_up && hit_line_below && hit_line_right && hit_line_left {
+    //            if lines_crossed % 2 == 1 {
+    //                grid[(y - min_y) as usize][(x - min_x) as usize] = '+';
+    //                counter += 1;
+    //            } else {
+    //                grid[(y - min_y) as usize][(x - min_x) as usize] = '.';
+    //            }
+    //        } else {
+    //            grid[(y - min_y) as usize][(x - min_x) as usize] = '#';
+    //        }
+    //    }
+    //}
+    //counter + borders.iter().map(|line| line.count()).sum::<usize>()
 }
-//if visited.contains(&(x, y)) {
-//    continue;
-//}
-//let mut current_set = HashSet::new();
-//current_set.insert((x, y));
 
-//let mut queue = VecDeque::new();
-//queue.push_back((x, y));
+pub fn solve_part_2(input: &str) -> usize {
+    let mut borders = Vec::with_capacity(input.lines().count());
+    let mut current = (0, 0);
+    for line in input.lines() {
+        let hex = line
+            .split_whitespace()
+            .last()
+            .expect(&format!("No parse {}", line));
 
-//while let Some((x, y)) = queue.pop_front() {
-//    for (nx, ny) in [(x + 1, y), (x, y - 1), (x - 1, y), (x, y + 1)] {
-//        if !(nx >= min_x && nx <= max_x && ny >= min_y && ny <= max_y) {
-//            if !borders.iter().any(|line| line.contains((x, y))) {
-//                visited.insert((nx, ny));
-//                queue.push_back((nx, ny));
-//            }
-//        } else {
-//            current_set.clear();
-//            queue.clear();
-//            break;
-//        }
-//    }
-//}
-//if !current_set.is_empty() {
-//    counter += current_set.len();
-//}
+        let (dir, steps) = (hex.chars().nth(7).unwrap(), &hex[2..7]);
+        let steps = i64::from_str_radix(steps, 16).unwrap();
+        match dir {
+            '0' => {
+                borders.push(Line::Horizontal(Horizontal {
+                    y: current.1,
+                    x: current.0..=current.0 + steps - 1,
+                    should_count: false,
+                }));
+                current.0 += steps;
+            }
+            '1' => {
+                borders.push(Line::Vertical(Vertical {
+                    x: current.0,
+                    y: current.1 - steps + 1..=current.1,
+                }));
+                current.1 -= steps;
+            }
+            '2' => {
+                borders.push(Line::Horizontal(Horizontal {
+                    y: current.1,
+                    x: current.0 - steps + 1..=current.0,
+                    should_count: false,
+                }));
+                current.0 -= steps;
+            }
+            '3' => {
+                borders.push(Line::Vertical(Vertical {
+                    x: current.0,
+                    y: current.1..=current.1 + steps - 1,
+                }));
+                current.1 += steps;
+            }
+            _ => unreachable!(),
+        }
+    }
+    let min_y = borders
+        .iter()
+        .map(|line| match line {
+            Line::Horizontal(h) => h.y,
+            Line::Vertical(v) => *v.y.start(),
+        })
+        .min()
+        .unwrap();
+    let max_y = borders
+        .iter()
+        .map(|line| match line {
+            Line::Horizontal(h) => h.y,
+            Line::Vertical(v) => *v.y.end(),
+        })
+        .max()
+        .unwrap();
 
-pub fn solve_part_2(_input: &str) -> usize {
+    let verticals = borders
+        .iter()
+        .filter_map(|line| match line {
+            Line::Vertical(v) => Some((*v.y.start(), *v.y.end())),
+            Line::Horizontal(_) => None,
+        })
+        .flat_map(move |(start, end)| [start, end])
+        .sorted()
+        .unique()
+        .collect::<Vec<_>>();
+
+    println!("{}, {}", min_y, max_y);
+    println!("{:?}", verticals);
     todo!()
 }
 
@@ -235,6 +395,7 @@ impl Line {
 struct Horizontal {
     y: i64,
     x: RangeInclusive<i64>,
+    should_count: bool,
 }
 
 #[derive(Debug)]
