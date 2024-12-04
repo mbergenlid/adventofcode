@@ -1,26 +1,28 @@
 use itertools::Itertools;
 
 pub fn solve_part_1(input: &str) -> usize {
-    input
-        .lines()
-        .filter(|line| {
-            is_safe(parse(line))
-        })
-        .count()
+    input.lines().filter(|line| is_safe(parse(line))).count()
 }
 
 fn parse(line: &str) -> Vec<usize> {
-                line.split(" ")
-                    .map(|a| {
-                        a.parse::<usize>()
-                            .unwrap_or_else(|_| panic!("Not a number {}", a))
-                    })
-                    .collect::<Vec<_>>()
-
+    line.split(" ")
+        .map(|a| {
+            a.parse::<usize>()
+                .unwrap_or_else(|_| panic!("Not a number {}", a))
+        })
+        .collect::<Vec<_>>()
 }
 
-fn is_safe<T>(numbers: T) -> bool where T: IntoIterator<Item = usize> + Clone {
-    let (first, second) = numbers.clone().into_iter().take(2).collect_tuple::<(_,_)>().expect("Iterator not enought elements");
+fn is_safe<T>(numbers: T) -> bool
+where
+    T: IntoIterator<Item = usize> + Clone,
+{
+    let (first, second) = numbers
+        .clone()
+        .into_iter()
+        .take(2)
+        .collect_tuple::<(_, _)>()
+        .expect("Iterator not enought elements");
     let asc = first < second;
     let clone = numbers.clone();
     for (first, second) in numbers.into_iter().zip(clone.into_iter().skip(1)) {
@@ -37,21 +39,24 @@ fn is_safe<T>(numbers: T) -> bool where T: IntoIterator<Item = usize> + Clone {
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    input.lines().filter(|line| {
-        let numbers = parse(line);
+    input
+        .lines()
+        .filter(|line| {
+            let numbers = parse(line);
 
-        if is_safe(numbers.clone()) {
-            return true;
-        }
-        for i in 0..numbers.len() {
-            let mut copy = numbers.clone();
-            copy.remove(i);
-           if is_safe(copy) {
-               return true;
-           }
-        }
-        false
-    }).count()
+            if is_safe(numbers.clone()) {
+                return true;
+            }
+            for i in 0..numbers.len() {
+                let mut copy = numbers.clone();
+                copy.remove(i);
+                if is_safe(copy) {
+                    return true;
+                }
+            }
+            false
+        })
+        .count()
 }
 
 #[cfg(test)]
