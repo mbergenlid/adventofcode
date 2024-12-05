@@ -1,18 +1,14 @@
 [package]
-name = "aoc2023"
+name = "aoc2024"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aoc_lib = { path = "../aoc-lib" }
 itertools = "0.12.0"
 recap = "0.1.2"
 regex = "1.11.1"
 serde = "1.0.193"
 serde_derive = "1.0.193"
-#recap = "0.1.1"
-#serde = "1.0.130"
-#serde_derive = "1.0.130"
-#itertools = "0.10.3"
-#nom = "7.1.0"

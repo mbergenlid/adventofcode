@@ -12,14 +12,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "aoc2023"
+name = "aoc2024"
 version = "0.1.0"
 dependencies = [
+ "aoc_lib",
  "itertools",
  "recap",
  "regex",
  "serde",
  "serde_derive",
+]
+
+[[package]]
+name = "aoc_lib"
+version = "0.1.0"
+dependencies = [
+ "itertools",
 ]
 
 [[package]]
