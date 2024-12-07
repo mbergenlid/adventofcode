@@ -1,7 +1,7 @@
 use aoc_lib::grid::Grid;
 
 pub fn solve_part_1(input: &str) -> usize {
-    let grid = input.parse::<Grid>().expect("Invalid input");
+    let grid = input.parse::<Grid<char>>().expect("Invalid input");
 
     let mut result = 0;
     for point in grid.iter() {
@@ -52,7 +52,7 @@ pub fn solve_part_1(input: &str) -> usize {
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    let grid = input.parse::<Grid>().expect("Invalid input");
+    let grid = input.parse::<Grid<char>>().expect("Invalid input");
 
     let mut result = 0;
     for point in grid.iter() {

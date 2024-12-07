@@ -1,14 +1,14 @@
 use std::{collections::HashSet, iter::Peekable};
 
-use aoc_lib::grid::{DiagonalIterator, Grid, Point, Pos};
+use aoc_lib::grid::{PathIterator, Grid, Point, Pos};
 
 pub fn solve_part_1(input: &str) -> usize {
-    let grid = input.parse::<Grid>().expect("Invalid input");
+    let grid = input.parse::<Grid<char>>().expect("Invalid input");
     GuardIter::start(&grid).map(|(p, _)| p.pos).collect::<HashSet<_>>().len()
 }
 
 pub fn solve_part_2(input: &str) -> usize {
-    let mut grid = input.parse::<Grid>().expect("Invalid input");
+    let mut grid = input.parse::<Grid<char>>().expect("Invalid input");
 
     let mut iter = GuardIter::start(&grid).peekable();
 
@@ -32,15 +32,15 @@ pub fn solve_part_2(input: &str) -> usize {
 }
 
 struct GuardIter<'a> {
-    grid: &'a Grid,
-    current_iter: Peekable<DiagonalIterator<'a>>,
+    grid: &'a Grid<char>,
+    current_iter: Peekable<PathIterator<'a, char>>,
     current_pos: Pos,
     current_dir: Direction,
 }
 
 impl<'a> GuardIter<'a> {
 
-    fn start(grid: &'a Grid) -> Self {
+    fn start(grid: &'a Grid<char>) -> Self {
         let start_pos = grid
             .iter()
             .find(|point| point.value == '^')
@@ -76,7 +76,7 @@ impl Direction {
 }
 
 impl<'a> Iterator for GuardIter<'a> {
-    type Item = (Point, Direction);
+    type Item = (Point<char>, Direction);
 
     fn next(&mut self) -> Option<Self::Item> {
         let directions = [Grid::up, Grid::right, Grid::down, Grid::left];
@@ -101,7 +101,7 @@ impl<'a> Iterator for GuardIter<'a> {
     }
 }
 
-fn has_cycle(grid: &Grid) -> bool {
+fn has_cycle(grid: &Grid<char>) -> bool {
     let mut visited = HashSet::new();
     for (p, dir) in GuardIter::start(grid) {
         let pos = (p.pos, dir);
