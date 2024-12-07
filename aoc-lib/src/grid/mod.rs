@@ -1,13 +1,19 @@
-use std::str::FromStr;
+use std::{iter::Map, str::FromStr};
 
 use itertools::Itertools;
 
 
+#[derive(Clone)]
 pub struct Grid {
     data: Vec<Vec<char>>,
 }
 
 impl Grid {
+
+    pub fn insert(&mut self, pos: Pos, value: char) {
+        self.data[pos.0][pos.1] = value;
+    }
+
     pub fn iter(&self) -> RowWiseIter<'_> {
         RowWiseIter {
             data: &self.data,
@@ -77,7 +83,7 @@ impl Grid {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash)]
 pub struct Pos(usize, usize);
 
 impl Pos {
@@ -166,19 +172,26 @@ pub struct DiagonalIterator<'a> {
 
 
 impl<'a> Iterator for DiagonalIterator<'a> {
-    type Item = char;
+    type Item = Point;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(row) = self.data.get(self.pos.0) {
             if let Some(next) = row.get(self.pos.1) {
                 let next_pos = (self.next_fn)(self.pos);
+                let point = Point { pos: self.pos, value: *next }; 
                 self.pos = next_pos;
-                Some(*next)
+                Some(point)
             } else {
                 None
             }
         } else {
             None
         }
+    }
+}
+
+impl<'a> DiagonalIterator<'a> {
+    pub fn values(self) -> Map<DiagonalIterator<'a>, impl FnMut(Point) -> char> {
+        self.map(|p| p.value)
     }
 }
