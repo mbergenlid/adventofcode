@@ -30,14 +30,13 @@ pub fn solve_part_1(input: &str) -> usize {
             update
                 .iter()
                 .copied()
-                .skip(update.len() / 2)
-                .next()
+                .nth(update.len() / 2)
                 .expect("Can't be empty")
         })
         .sum::<usize>()
 }
 
-fn is_valid(update: &Vec<usize>, rules: &Vec<(usize, usize)>) -> bool {
+fn is_valid(update: &[usize], rules: &[(usize, usize)]) -> bool {
     for (i, x) in update.iter().enumerate() {
         for other in &update[i + 1..] {
             if rules.iter().any(|(r1, r2)| r1 == other && r2 == x) {
@@ -88,8 +87,7 @@ pub fn solve_part_2(input: &str) -> usize {
             update
                 .iter()
                 .copied()
-                .skip(update.len() / 2)
-                .next()
+                .nth(update.len() / 2)
                 .expect("Can't be empty")
         })
         .sum::<usize>()
