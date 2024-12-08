@@ -2,7 +2,6 @@ use std::hash::Hash;
 
 use itertools::Itertools;
 
-
 pub mod algorithms;
 
 pub trait DirectedGraph<T> {
@@ -34,14 +33,17 @@ pub struct AdjacencyListGraph<T> {
     nodes: Vec<T>,
 }
 
-impl <T> AdjacencyListGraph<T> where T: Clone + Eq + Hash {
-
+impl<T> AdjacencyListGraph<T>
+where
+    T: Clone + Eq + Hash,
+{
     pub fn new(edges: Vec<(T, T)>) -> Self {
-        let nodes = edges.iter().flat_map(|(a, b)| [a.clone(), b.clone()].into_iter()).unique().collect::<Vec<_>>();
-        AdjacencyListGraph {
-            data: edges,
-            nodes,
-        }
+        let nodes = edges
+            .iter()
+            .flat_map(|(a, b)| [a.clone(), b.clone()].into_iter())
+            .unique()
+            .collect::<Vec<_>>();
+        AdjacencyListGraph { data: edges, nodes }
     }
 }
 

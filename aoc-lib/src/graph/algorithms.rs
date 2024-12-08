@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 
 use super::DirectedGraph;
 
-
 pub fn topological_sort<G, T>(mut graph: G) -> Vec<T>
 where
     G: DirectedGraph<T>,
@@ -32,7 +31,6 @@ where
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::graph::AdjacencyListGraph;
@@ -42,13 +40,34 @@ mod test {
         let graph = AdjacencyListGraph::new(vec![(5_usize, 11), (11, 2)]);
         assert_eq!(super::topological_sort(graph), vec![5, 11, 2]);
 
-        let graph = AdjacencyListGraph::new(vec![ (5, 11), (11, 2), (7, 11), (7, 8), (11, 9), (11, 10), (8, 9), (3, 8), (3, 10) ]);
+        let graph = AdjacencyListGraph::new(vec![
+            (5, 11),
+            (11, 2),
+            (7, 11),
+            (7, 8),
+            (11, 9),
+            (11, 10),
+            (8, 9),
+            (3, 8),
+            (3, 10),
+        ]);
         let sort = super::topological_sort(graph);
 
-        assert!(is_valid(&sort, &vec![ (5, 11), (11, 2), (7, 11), (7, 8), (11, 9), (11, 10), (8, 9), (3, 8), (3, 10) ]));
+        assert!(is_valid(
+            &sort,
+            &vec![
+                (5, 11),
+                (11, 2),
+                (7, 11),
+                (7, 8),
+                (11, 9),
+                (11, 10),
+                (8, 9),
+                (3, 8),
+                (3, 10)
+            ]
+        ));
     }
-
-
 
     fn is_valid(update: &Vec<usize>, rules: &Vec<(usize, usize)>) -> bool {
         for (i, x) in update.iter().enumerate() {

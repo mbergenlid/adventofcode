@@ -2,21 +2,32 @@ use std::{iter::Map, str::FromStr};
 
 use itertools::Itertools;
 
-
 pub struct Grid<T> {
     data: Vec<Vec<T>>,
 }
 
-impl <T> Clone for Grid<T> where T: Clone {
+impl<T> Clone for Grid<T>
+where
+    T: Clone,
+{
     fn clone(&self) -> Self {
-        Self { data: self.data.clone() }
+        Self {
+            data: self.data.clone(),
+        }
     }
 }
 
 impl<T> Grid<T> {
-
     pub fn insert(&mut self, pos: Pos, value: T) {
         self.data[pos.0][pos.1] = value;
+    }
+
+    pub fn get(&self, pos: Pos) -> Option<&T> {
+        if let Some(row) = self.data.get(pos.row()) {
+            row.get(pos.col())
+        } else {
+            None
+        }
     }
 
     pub fn iter(&self) -> RowWiseIter<'_, T> {
@@ -31,28 +42,32 @@ impl<T> Grid<T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::up,
+            row_step: -1,
+            col_step: 0,
         }
     }
     pub fn down(&self, pos: Pos) -> PathIterator<'_, T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::down,
+            row_step: 1,
+            col_step: 0,
         }
     }
     pub fn left(&self, pos: Pos) -> PathIterator<'_, T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::left,
+            row_step: 0,
+            col_step: -1,
         }
     }
     pub fn right(&self, pos: Pos) -> PathIterator<'_, T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::right,
+            row_step: 0,
+            col_step: 1,
         }
     }
 
@@ -60,7 +75,8 @@ impl<T> Grid<T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::up_right,
+            row_step: -1,
+            col_step: 1,
         }
     }
 
@@ -68,7 +84,8 @@ impl<T> Grid<T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::down_right, //Box::new(|r, c| (r+1, c+1)),
+            row_step: 1,
+            col_step: 1,
         }
     }
 
@@ -76,14 +93,25 @@ impl<T> Grid<T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::up_left,
+            row_step: -1,
+            col_step: -1,
         }
     }
     pub fn down_left(&self, pos: Pos) -> PathIterator<'_, T> {
         PathIterator {
             data: &self.data,
             pos,
-            next_fn: &Pos::down_left, //Box::new(|r, c| (r+1, c+1)),
+            row_step: 1,
+            col_step: -1,
+        }
+    }
+
+    pub fn step(&self, pos: Pos, step_row: isize, step_col: isize) -> PathIterator<'_, T> {
+        PathIterator {
+            data: &self.data,
+            pos,
+            row_step: step_row,
+            col_step: step_col,
         }
     }
 }
@@ -92,6 +120,15 @@ impl<T> Grid<T> {
 pub struct Pos(usize, usize);
 
 impl Pos {
+    pub fn new(row: usize, col: usize) -> Self {
+        Self(row, col)
+    }
+    pub fn row(&self) -> usize {
+        self.0
+    }
+    pub fn col(&self) -> usize {
+        self.1
+    }
     pub fn up(self) -> Pos {
         Pos(self.0.wrapping_sub(1), self.1)
     }
@@ -129,7 +166,10 @@ pub struct RowWiseIter<'a, T> {
     col: usize,
 }
 
-impl<'a, T> Iterator for RowWiseIter<'a, T> where T: Clone {
+impl<'a, T> Iterator for RowWiseIter<'a, T>
+where
+    T: Clone,
+{
     type Item = Point<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -157,7 +197,10 @@ pub struct Point<T> {
     pub value: T,
 }
 
-impl<T> FromStr for Grid<T> where T: From<char> {
+impl<T> FromStr for Grid<T>
+where
+    T: From<char>,
+{
     type Err = ();
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -172,18 +215,27 @@ impl<T> FromStr for Grid<T> where T: From<char> {
 pub struct PathIterator<'a, T> {
     data: &'a Vec<Vec<T>>,
     pos: Pos,
-    next_fn: &'static dyn Fn(Pos) -> Pos,
+    row_step: isize,
+    col_step: isize,
 }
 
-
-impl<'a, T> Iterator for PathIterator<'a, T> where T: Clone {
+impl<'a, T> Iterator for PathIterator<'a, T>
+where
+    T: Clone,
+{
     type Item = Point<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(row) = self.data.get(self.pos.0) {
             if let Some(next) = row.get(self.pos.1) {
-                let next_pos = (self.next_fn)(self.pos);
-                let point = Point { pos: self.pos, value: next.clone() }; 
+                let next_pos = Pos(
+                    self.pos.0.wrapping_add(self.row_step as usize),
+                    self.pos.1.wrapping_add(self.col_step as usize),
+                );
+                let point = Point {
+                    pos: self.pos,
+                    value: next.clone(),
+                };
                 self.pos = next_pos;
                 Some(point)
             } else {
@@ -196,7 +248,10 @@ impl<'a, T> Iterator for PathIterator<'a, T> where T: Clone {
 }
 
 impl<'a, T> PathIterator<'a, T> {
-    pub fn values(self) -> Map<PathIterator<'a, T>, impl FnMut(Point<T>) -> T> where T: Clone {
+    pub fn values(self) -> Map<PathIterator<'a, T>, impl FnMut(Point<T>) -> T>
+    where
+        T: Clone,
+    {
         self.map(|p| p.value)
     }
 }
