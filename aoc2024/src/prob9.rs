@@ -77,7 +77,7 @@ impl Display for Blocks {
                 }
             } else {
                 for _ in 0..b.length {
-                    write!(f, "{}", ".")?;
+                    write!(f, ".")?;
                 }
             }
         }
@@ -107,22 +107,6 @@ impl FromStr for Blocks {
 }
 
 impl Blocks {
-    fn pack(&mut self) {
-        for b in 0..self.0.len() {
-            let current_block = &self.0[b];
-            let empty_block_length = current_block.length;
-            if current_block.file.is_none() {
-                if let Some(source) = self.0.iter_mut().rev().find(|file| file.file.is_some()) {
-                    let source_file_id = source.file.expect("Must be there");
-                    if empty_block_length > source.length {
-                        source.file.take();
-                        self.0[b].file.replace(source_file_id);
-                    }
-                }
-
-            }
-        }
-    }
 
     fn defragment(&mut self) {
         for b in (0..self.0.len()).rev() {

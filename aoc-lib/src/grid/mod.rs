@@ -1,9 +1,21 @@
-use std::{iter::Map, str::FromStr};
+use std::{fmt::Debug, iter::Map, str::FromStr};
 
 use itertools::Itertools;
 
 pub struct Grid<T> {
     data: Vec<Vec<T>>,
+}
+
+impl<T> Debug for Grid<T> where T: Debug {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in &self.data {
+            for col in row {
+                write!(f, "{:?}", col)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
 }
 
 impl<T> Clone for Grid<T>
@@ -116,7 +128,7 @@ impl<T> Grid<T> {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone, Hash)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
 pub struct Pos(usize, usize);
 
 impl Pos {
@@ -197,16 +209,32 @@ pub struct Point<T> {
     pub value: T,
 }
 
+trait ParseChar {
+    fn parse(c: char) -> Self;
+}
+
+impl ParseChar for char {
+    fn parse(c: char) -> Self {
+        c
+    }
+}
+
+impl ParseChar for u32 {
+    fn parse(c: char) -> Self {
+        c as u32 - '0' as u32
+    }
+}
+
 impl<T> FromStr for Grid<T>
 where
-    T: From<char>,
+    T: ParseChar,
 {
     type Err = ();
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let puzzle = input
             .lines()
-            .map(|line| line.chars().map(|c| c.into()).collect_vec())
+            .map(|line| line.chars().map(|c| ParseChar::parse(c)).collect_vec())
             .collect_vec();
         Ok(Self { data: puzzle })
     }
