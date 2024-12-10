@@ -1,10 +1,13 @@
 use std::{collections::HashSet, iter::Peekable};
 
-use aoc_lib::grid::{PathIterator, Grid, Point, Pos};
+use aoc_lib::grid::{Grid, PathIterator, Point, Pos};
 
 pub fn solve_part_1(input: &str) -> usize {
     let grid = input.parse::<Grid<char>>().expect("Invalid input");
-    GuardIter::start(&grid).map(|(p, _)| p.pos).collect::<HashSet<_>>().len()
+    GuardIter::start(&grid)
+        .map(|(p, _)| p.pos)
+        .collect::<HashSet<_>>()
+        .len()
 }
 
 pub fn solve_part_2(input: &str) -> usize {
@@ -39,7 +42,6 @@ struct GuardIter<'a> {
 }
 
 impl<'a> GuardIter<'a> {
-
     fn start(grid: &'a Grid<char>) -> Self {
         let start_pos = grid
             .iter()
@@ -86,7 +88,8 @@ impl<'a> Iterator for GuardIter<'a> {
         if let Some(peek) = iter.peek() {
             if peek.value == '#' {
                 self.current_dir = self.current_dir.turn();
-                let iter = (directions[self.current_dir as usize])(self.grid, self.current_pos).peekable();
+                let iter =
+                    (directions[self.current_dir as usize])(self.grid, self.current_pos).peekable();
                 self.current_iter = iter;
                 return self.next();
             }
@@ -113,7 +116,6 @@ fn has_cycle(grid: &Grid<char>) -> bool {
     }
     false
 }
-
 
 #[cfg(test)]
 mod test {
