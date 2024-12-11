@@ -107,7 +107,6 @@ impl FromStr for Blocks {
 }
 
 impl Blocks {
-
     fn defragment(&mut self) {
         for b in (0..self.0.len()).rev() {
             let current_block = &self.0[b];

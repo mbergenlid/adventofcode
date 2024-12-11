@@ -15,7 +15,10 @@ pub fn solve_part_2(input: &str) -> usize {
 fn solve(input: &str) -> (usize, usize) {
     let grid = input.parse::<Grid<u32>>().expect("Invalid input");
 
-    let trail_heads = grid.iter().filter(|p| p.value == 0).collect::<VecDeque<_>>();
+    let trail_heads = grid
+        .iter()
+        .filter(|p| p.value == 0)
+        .collect::<VecDeque<_>>();
     let mut unique_paths = 0;
     let mut unique_targets = 0;
 
@@ -25,7 +28,6 @@ fn solve(input: &str) -> (usize, usize) {
         queue.push_back(head);
 
         while let Some(next) = queue.pop_front() {
-
             if next.value == 9 {
                 unique_paths += 1;
                 targets.insert(next.pos);
@@ -34,25 +36,37 @@ fn solve(input: &str) -> (usize, usize) {
             let up_pos = next.pos.up();
             if let Some(up) = grid.get(up_pos) {
                 if *up == next.value + 1 {
-                    queue.push_back(Point { value: *up, pos: up_pos });
+                    queue.push_back(Point {
+                        value: *up,
+                        pos: up_pos,
+                    });
                 }
             }
             let down_pos = next.pos.down();
             if let Some(down) = grid.get(down_pos) {
                 if *down == next.value + 1 {
-                    queue.push_back(Point { value: *down, pos: down_pos });
+                    queue.push_back(Point {
+                        value: *down,
+                        pos: down_pos,
+                    });
                 }
             }
             let left_pos = next.pos.left();
             if let Some(left) = grid.get(left_pos) {
                 if *left == next.value + 1 {
-                    queue.push_back(Point { value: *left, pos: left_pos });
+                    queue.push_back(Point {
+                        value: *left,
+                        pos: left_pos,
+                    });
                 }
             }
             let right_pos = next.pos.right();
             if let Some(right) = grid.get(right_pos) {
                 if *right == next.value + 1 {
-                    queue.push_back(Point { value: *right, pos: right_pos });
+                    queue.push_back(Point {
+                        value: *right,
+                        pos: right_pos,
+                    });
                 }
             }
         }
@@ -61,7 +75,6 @@ fn solve(input: &str) -> (usize, usize) {
     }
 
     (unique_targets, unique_paths)
-
 }
 
 #[cfg(test)]
