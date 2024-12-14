@@ -170,6 +170,10 @@ impl Pos {
     pub fn down_left(self) -> Self {
         Self(self.0 + 1, self.1.wrapping_sub(1))
     }
+
+    pub fn distance_to(&self, other: &Pos) -> usize {
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
+    }
 }
 
 pub struct RowWiseIter<'a, T> {
@@ -251,7 +255,7 @@ impl<'a, T> Iterator for PathIterator<'a, T>
 where
     T: Clone,
 {
-    type Item = Point<T>;
+    type Item = Point< T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(row) = self.data.get(self.pos.0) {
