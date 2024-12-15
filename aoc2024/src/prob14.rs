@@ -18,7 +18,6 @@ fn solve_1<const ROWS: usize, const COLS: usize>(input: &str) -> usize {
         //.filter(|r| r.pos == Pos::new(4, 2))
         .collect_vec();
 
-
     for _ in 0..100 {
         for robot in robots.iter_mut() {
             robot.step();
@@ -33,20 +32,19 @@ fn solve_1<const ROWS: usize, const COLS: usize>(input: &str) -> usize {
     let mut quadrant_4 = 0;
     // (2n+1)/2 =  n + 1/2 = n
     for robot in robots {
-        if robot.pos.row() < ROWS/2 {
+        if robot.pos.row() < ROWS / 2 {
             match robot.pos.col() {
-                col if col < COLS/2 => quadrant_1 += 1,
-                col if col > COLS/2 => quadrant_2 += 1,
-                _ => {},
+                col if col < COLS / 2 => quadrant_1 += 1,
+                col if col > COLS / 2 => quadrant_2 += 1,
+                _ => {}
             }
-        } else if robot.pos.row() > ROWS/2 {
+        } else if robot.pos.row() > ROWS / 2 {
             match robot.pos.col() {
-                col if col < COLS/2 => quadrant_3 += 1,
-                col if col > COLS/2 => quadrant_4 += 1,
-                _ => {},
+                col if col < COLS / 2 => quadrant_3 += 1,
+                col if col > COLS / 2 => quadrant_4 += 1,
+                _ => {}
             }
         }
-
     }
     dbg!(quadrant_1) * dbg!(quadrant_2) * dbg!(quadrant_3) * dbg!(quadrant_4)
 }
@@ -61,14 +59,13 @@ pub fn solve_part_2(input: &str) -> usize {
         //.filter(|r| r.pos == Pos::new(4, 2))
         .collect_vec();
 
-
     for i in 1..10000 {
         for robot in robots.iter_mut() {
             robot.step();
         }
         let mut total_dist = 0;
         for (index, r1) in robots.iter().enumerate() {
-            for r2 in robots.iter().skip(index+1) {
+            for r2 in robots.iter().skip(index + 1) {
                 total_dist += r1.pos.distance_to(&r2.pos);
             }
         }
@@ -83,7 +80,10 @@ pub fn solve_part_2(input: &str) -> usize {
 fn print<const R: usize, const C: usize>(robots: &[Robot<R, C>]) {
     for row in 0..R {
         for col in 0..C {
-            let r = robots.iter().filter(|r| r.pos == Pos::new(row, col)).count();
+            let r = robots
+                .iter()
+                .filter(|r| r.pos == Pos::new(row, col))
+                .count();
             if r > 0 {
                 print!("#");
             } else {
@@ -137,15 +137,17 @@ impl<const ROWS: usize, const COLS: usize> FromStr for Robot<ROWS, COLS> {
             parse_number(&vel_str[2..vel_comma])?,
         );
 
-        Ok(Robot {
-            pos,
-            velocity,
-        })
+        Ok(Robot { pos, velocity })
     }
 }
 
-fn parse_number<T>(s: &str) -> Result<T, String> where T: FromStr, <T as FromStr>::Err: Debug {
-    s.parse::<T>().map_err(|e| format!("Not a number: {}\n{:?}", s, e))
+fn parse_number<T>(s: &str) -> Result<T, String>
+where
+    T: FromStr,
+    <T as FromStr>::Err: Debug,
+{
+    s.parse::<T>()
+        .map_err(|e| format!("Not a number: {}\n{:?}", s, e))
 }
 
 #[cfg(test)]

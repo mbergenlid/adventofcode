@@ -1,4 +1,4 @@
-use std::{fmt::Debug, iter::Map, str::FromStr};
+use std::{fmt::{Debug, Display}, iter::Map, str::FromStr};
 
 use itertools::Itertools;
 
@@ -6,11 +6,11 @@ pub struct Grid<T> {
     data: Vec<Vec<T>>,
 }
 
-impl<T> Debug for Grid<T> where T: Debug {
+impl<T> Debug for Grid<T> where T: Display {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in &self.data {
             for col in row {
-                write!(f, "{:?}", col)?;
+                write!(f, "{}", col)?;
             }
             writeln!(f)?;
         }
