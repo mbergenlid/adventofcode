@@ -173,7 +173,10 @@ impl Robot {
                         );
                     } else {
                         self.move_all(
-                            boxes_to_move.iter().sorted_by_key(|(pos, _)| pos.row()).rev(),
+                            boxes_to_move
+                                .iter()
+                                .sorted_by_key(|(pos, _)| pos.row())
+                                .rev(),
                             Pos::down,
                         );
                     }
