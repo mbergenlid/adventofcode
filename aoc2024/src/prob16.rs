@@ -42,7 +42,11 @@ fn dijkstra(grid: &Grid<char>) -> Option<(usize, usize)> {
         if position == goal {
             let mut nodes_on_path: HashSet<Pos> = HashSet::new();
             let mut nodes_to_visit = VecDeque::new();
-            nodes_to_visit.push_back(State { cost, position: goal, direction});
+            nodes_to_visit.push_back(State {
+                cost,
+                position: goal,
+                direction,
+            });
             while let Some(node) = nodes_to_visit.pop_front() {
                 nodes_on_path.insert(node.position);
 
@@ -68,10 +72,23 @@ fn dijkstra(grid: &Grid<char>) -> Option<(usize, usize)> {
             if clockwise.cost <= distances[&(clockwise.position, clockwise.direction)] {
                 distances.insert((clockwise.position, clockwise.direction), clockwise.cost);
                 if let Some(parents) = prevs.get_mut(&clockwise) {
-                    parents.insert(State { cost, position, direction });
+                    parents.insert(State {
+                        cost,
+                        position,
+                        direction,
+                    });
                     heap.push(clockwise);
                 } else {
-                    prevs.insert(clockwise.clone(), vec![State { cost, position, direction }].into_iter().collect());
+                    prevs.insert(
+                        clockwise.clone(),
+                        vec![State {
+                            cost,
+                            position,
+                            direction,
+                        }]
+                        .into_iter()
+                        .collect(),
+                    );
                     heap.push(clockwise);
                 }
             }
@@ -88,12 +105,24 @@ fn dijkstra(grid: &Grid<char>) -> Option<(usize, usize)> {
                     (c_clockwise.position, c_clockwise.direction),
                     c_clockwise.cost,
                 );
-                if let Some(parents) = prevs.get_mut(&c_clockwise)
-                {
-                    parents.insert(State { cost, position, direction});
+                if let Some(parents) = prevs.get_mut(&c_clockwise) {
+                    parents.insert(State {
+                        cost,
+                        position,
+                        direction,
+                    });
                     heap.push(c_clockwise);
                 } else {
-                    prevs.insert(c_clockwise.clone(), vec![State {cost, position, direction}].into_iter().collect());
+                    prevs.insert(
+                        c_clockwise.clone(),
+                        vec![State {
+                            cost,
+                            position,
+                            direction,
+                        }]
+                        .into_iter()
+                        .collect(),
+                    );
                     heap.push(c_clockwise);
                 }
             }
@@ -109,12 +138,24 @@ fn dijkstra(grid: &Grid<char>) -> Option<(usize, usize)> {
                         direction,
                     };
                     if forward.cost <= distances[&(forward.position, forward.direction)] {
-                        if let Some(parents) = prevs.get_mut(&forward)
-                        {
-                            parents.insert(State { cost, position, direction});
+                        if let Some(parents) = prevs.get_mut(&forward) {
+                            parents.insert(State {
+                                cost,
+                                position,
+                                direction,
+                            });
                             heap.push(forward);
                         } else {
-                            prevs.insert(forward.clone(), vec![State { cost, position, direction}].into_iter().collect());
+                            prevs.insert(
+                                forward.clone(),
+                                vec![State {
+                                    cost,
+                                    position,
+                                    direction,
+                                }]
+                                .into_iter()
+                                .collect(),
+                            );
                             heap.push(forward);
                         }
                     }
@@ -125,7 +166,6 @@ fn dijkstra(grid: &Grid<char>) -> Option<(usize, usize)> {
 
     None
 }
-
 
 #[derive(Eq, PartialEq, Hash, Debug, Clone)]
 struct State {
