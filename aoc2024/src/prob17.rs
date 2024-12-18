@@ -47,13 +47,20 @@ pub fn solve_part_2(input: &str) -> usize {
     fn _solve(program: &[u8], current_a: i64, b: i64, c: i64, out_index: usize) -> Option<i64> {
         let out = program[out_index];
         for a_start in 0..8 {
-            let x = run_program(program, Registers { a: (current_a << 3) | a_start, b, c });
+            let x = run_program(
+                program,
+                Registers {
+                    a: (current_a << 3) | a_start,
+                    b,
+                    c,
+                },
+            );
             if let Some(&last) = x.first() {
                 if last == out as i64 {
                     if out_index == 0 {
                         return Some(current_a << 3 | a_start);
                     } else {
-                        let s = _solve(program, current_a << 3 | a_start, b, c, out_index-1);
+                        let s = _solve(program, current_a << 3 | a_start, b, c, out_index - 1);
                         if s.is_some() {
                             return s;
                         }
@@ -95,12 +102,10 @@ fn run_program(program: &[u8], mut registers: Registers) -> Vec<i64> {
             }
             5 => output.push(registers.combo_operand(operand) & 0b0111),
             6 => {
-                registers.b =
-                    registers.a / (1 << registers.combo_operand(operand));
+                registers.b = registers.a / (1 << registers.combo_operand(operand));
             }
             7 => {
-                registers.c =
-                    registers.a / (1 << registers.combo_operand(operand));
+                registers.c = registers.a / (1 << registers.combo_operand(operand));
             }
             _ => panic!("Unknown opcode {}", instr),
         }
