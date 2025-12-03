@@ -25,7 +25,7 @@ pub fn solve_part_2(input: &str) -> usize {
     for line in input.lines() {
         let (dial, zs) = match &line[0..1] {
             "L" => current.left(line[1..].parse::<u32>().unwrap()),
-            "R" => current.right(line[1..].parse::<u32>().expect(&format!("{line}"))),
+            "R" => current.right(line[1..].parse::<u32>().unwrap()),
             _ => panic!("Invalid line {line}"),
         };
 
