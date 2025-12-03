@@ -4,11 +4,7 @@ pub fn solve_part_1(input: &str) -> usize {
     for line in input.lines() {
         match &line[0..1] {
             "L" => current = current.left(line[1..].parse::<u32>().unwrap()).0,
-            "R" => {
-                current = current
-                    .right(line[1..].parse::<u32>().expect(&format!("{line}")))
-                    .0
-            }
+            "R" => current = current.right(line[1..].parse::<u32>().unwrap()).0,
             _ => panic!("Invalid line {line}"),
         }
 

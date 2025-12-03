@@ -126,25 +126,25 @@ mod test {
 
     #[test]
     fn test_iterator() {
-        let mut it = InvalidIdIterator::new();
+        let it = InvalidIdIterator::new();
         let res = it.take(10).collect::<Vec<_>>();
         assert_eq!(res, vec![11, 22, 33, 44, 55, 66, 77, 88, 99, 1010]);
 
-        let mut it = InvalidIdIterator::new();
+        let it = InvalidIdIterator::new();
         let res = it.skip_while(|n| *n < 100000).take(3).collect::<Vec<_>>();
         assert_eq!(res, vec![100100, 101101, 102102]);
     }
 
     #[test]
     fn test_iterator_part2() {
-        let mut it = InvalidIdIteratorPart2::new(10_000);
+        let it = InvalidIdIteratorPart2::new(10_000);
         let res = it.take(10).collect::<Vec<_>>();
         assert_eq!(res, vec![11, 111, 1111, 22, 222, 2222, 33, 333, 3333, 44]);
 
         let x = InvalidIdIteratorPart2::new(100).take(1000).count();
         assert!(x < 1000);
 
-        let mut it = InvalidIdIteratorPart2::new(100_000);
+        let it = InvalidIdIteratorPart2::new(100_000);
         let res = it.collect::<Vec<_>>();
         assert_eq!(
             HashSet::<u64>::from_iter(res.iter().copied()).len(),
