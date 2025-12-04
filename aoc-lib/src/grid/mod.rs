@@ -1,12 +1,31 @@
-use std::{fmt::{Debug, Display}, iter::Map, str::FromStr};
+use std::{
+    fmt::{Debug, Display},
+    iter::Map,
+    str::FromStr,
+};
 
 use itertools::Itertools;
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Direction {
+    Up,
+    UpRight,
+    Right,
+    DownRight,
+    Down,
+    DownLeft,
+    Left,
+    UpLeft,
+}
 
 pub struct Grid<T> {
     data: Vec<Vec<T>>,
 }
 
-impl<T> Debug for Grid<T> where T: Display {
+impl<T> Debug for Grid<T>
+where
+    T: Display,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in &self.data {
             for col in row {
@@ -118,6 +137,18 @@ impl<T> Grid<T> {
         }
     }
 
+    pub fn path(&self, dir: Direction, pos: Pos) -> PathIterator<'_, T> {
+        match dir {
+            Direction::Up => self.up(pos),
+            Direction::UpRight => self.up_right(pos),
+            Direction::Right => self.right(pos),
+            Direction::DownRight => self.down_right(pos),
+            Direction::Down => self.down(pos),
+            Direction::DownLeft => self.down_left(pos),
+            Direction::Left => self.left(pos),
+            Direction::UpLeft => self.up_left(pos),
+        }
+    }
     pub fn step(&self, pos: Pos, step_row: isize, step_col: isize) -> PathIterator<'_, T> {
         PathIterator {
             data: &self.data,
@@ -255,7 +286,7 @@ impl<'a, T> Iterator for PathIterator<'a, T>
 where
     T: Clone,
 {
-    type Item = Point< T>;
+    type Item = Point<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(row) = self.data.get(self.pos.0) {
