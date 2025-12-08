@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 aoc_lib = { path = "../aoc-lib" }
-#itertools = "0.12.0"
+itertools = "0.14.0"
