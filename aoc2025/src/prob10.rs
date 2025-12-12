@@ -265,7 +265,7 @@ impl Matrix {
 #[cfg(test)]
 mod test {
 
-    use crate::prob10::{solve_part_1, solve_part_2, IndicatorLights, Matrix};
+    use crate::prob10::{solve_part_1, solve_part_2, IndicatorLights};
 
     #[test]
     fn test_parse() {
