@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 aoc_lib = { path = "../aoc-lib" }
 itertools = "0.14.0"
+nalgebra = "0.34.1"
